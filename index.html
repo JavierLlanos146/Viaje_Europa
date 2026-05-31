@@ -467,7 +467,7 @@ function ItinTab({itin,setItin}){
     ${(ed||showAdd)&&html`<div class=${'modal-overlay'+(ed||showAdd?' open':'')} onClick=${e=>{if(e.target.classList.contains('modal-overlay')){setEd(null);setShowAdd(false)}}}>
       <div class="modal">
         <div class="modal-handle"></div>
-        <div class="modal-header"><span class="modal-title">${ed?'Editar ciudad':'Nueva ciudad'}</span><button class="btn-icon" onClick=${()=>{setEd(null);setShowAdd(false)}}>✕</button></div>
+        <div class="modal-header"><span class="modal-title">${ed?'Editar ciudad':'Nueva ciudad'}</span><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-primary btn-sm" onClick=${ed?saveEd:saveAdd}>${ed?'Guardar':'Agregar'}</button><button class="btn-icon" onClick=${()=>{setEd(null);setShowAdd(false)}}>✕</button></div></div>
         <div class="modal-body">
           <div class="field"><label class="label">Emoji</label><input class="input" value=${form.emoji||''} onInput=${e=>upd('emoji',e.target.value)} placeholder="🇫🇷"/></div>
           <div class="field"><label class="label">Ciudad</label><input class="input" value=${form.city||''} onInput=${e=>upd('city',e.target.value)} placeholder="París"/></div>
@@ -476,7 +476,6 @@ function ItinTab({itin,setItin}){
           <div class="field"><label class="label">Noches</label><input class="input" type="number" min="0" value=${form.nights||0} onInput=${e=>upd('nights',parseInt(e.target.value)||0)}/></div>
           <div class="field"><label class="label">Transporte desde ciudad anterior</label><input class="input" value=${form.transport||''} onInput=${e=>upd('transport',e.target.value)}/></div>
           <div class="field"><label class="label">Nota especial</label><input class="input" value=${form.special||''} onInput=${e=>upd('special',e.target.value)}/></div>
-          <div class="sticky-btn"><button class="btn btn-primary" style="width:100%" onClick=${ed?saveEd:saveAdd}>${ed?'Guardar cambios':'Agregar ciudad'}</button></div>
         </div>
       </div>
     </div>`}
@@ -530,7 +529,7 @@ function ExpTab({exp,setExp,itin,cur,rate}){
     ${showAdd&&html`<div class="modal-overlay open" onClick=${e=>{if(e.target.classList.contains('modal-overlay'))setShowAdd(false)}}>
       <div class="modal">
         <div class="modal-handle"></div>
-        <div class="modal-header"><span class="modal-title">Nuevo gasto</span><button class="btn-icon" onClick=${()=>setShowAdd(false)}>✕</button></div>
+        <div class="modal-header"><span class="modal-title">Nuevo gasto</span><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-primary btn-sm" onClick=${add}>Guardar</button><button class="btn-icon" onClick=${()=>setShowAdd(false)}>✕</button></div></div>
         <div class="modal-body">
           <div class="field"><label class="label">Monto</label>
             <div style="display:flex;gap:8px">
@@ -542,7 +541,6 @@ function ExpTab({exp,setExp,itin,cur,rate}){
           <div class="field"><label class="label">Ciudad</label><select class="input" value=${form.city} onChange=${e=>upd('city',e.target.value)}>${cities.map(c=>html`<option value=${c==='General'?'':c}>${c}</option>`)}</select></div>
           <div class="field"><label class="label">Descripción</label><input class="input" placeholder="Ej: Cena Roma" value=${form.description} onInput=${e=>upd('description',e.target.value)}/></div>
           <div class="field"><label class="label">Fecha</label><input class="input" type="date" value=${form.date} onInput=${e=>upd('date',e.target.value)}/></div>
-          <div class="sticky-btn"><button class="btn btn-primary" style="width:100%" onClick=${add}>Guardar gasto</button></div>
         </div>
       </div>
     </div>`}
@@ -637,6 +635,7 @@ function BudTab({bud,setBud,exp,itin,cur,rate}){
               <button class=${'cur-btn'+(editCur==='EUR'?' active':'')} onClick=${()=>changeEditCur('EUR')}>EUR</button>
               <button class=${'cur-btn'+(editCur==='COP'?' active':'')} onClick=${()=>changeEditCur('COP')}>COP</button>
             </div>
+            <button class="btn btn-primary btn-sm" onClick=${save}>Guardar</button>
             <button class="btn-icon" onClick=${()=>setEd(null)}>✕</button>
           </div>
         </div>
@@ -662,7 +661,6 @@ function BudTab({bud,setBud,exp,itin,cur,rate}){
               </div>
             </div>
           </div>
-          <div class="sticky-btn"><button class="btn btn-primary" style="width:100%" onClick=${save}>Guardar presupuesto</button></div>
         </div>
       </div>
     </div>`}
@@ -729,7 +727,7 @@ function ChkTab({chk,setChk}){
     ${showAdd&&html`<div class="modal-overlay open" onClick=${e=>{if(e.target.classList.contains('modal-overlay'))setShowAdd(false)}}>
       <div class="modal">
         <div class="modal-handle"></div>
-        <div class="modal-header"><span class="modal-title">Nuevo ítem</span><button class="btn-icon" onClick=${()=>setShowAdd(false)}>✕</button></div>
+        <div class="modal-header"><span class="modal-title">Nuevo ítem</span><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-primary btn-sm" onClick=${addItem}>Agregar</button><button class="btn-icon" onClick=${()=>setShowAdd(false)}>✕</button></div></div>
         <div class="modal-body">
           <div class="field"><label class="label">Categoría</label><select class="input" value=${newItem.cat} onChange=${e=>setNewItem(p=>({...p,cat:e.target.value}))}>${Object.keys(chk).map(c=>html`<option value=${c}>${c}</option>`)}</select></div>
           <div class="field"><label class="label">Descripción</label><input class="input" placeholder="Ej: Comprar adaptador europeo" value=${newItem.text} onInput=${e=>setNewItem(p=>({...p,text:e.target.value}))}/></div>
@@ -737,7 +735,6 @@ function ChkTab({chk,setChk}){
             <button class=${'checkbox'+(newItem.urgent?' checked':'')} onClick=${()=>setNewItem(p=>({...p,urgent:!p.urgent}))}>${newItem.urgent?'✓':''}</button>
             <div><div style="font-size:13px;font-weight:600">Marcar como urgente</div><div style="font-size:11px;color:var(--text3)">Aparece en alertas del Inicio</div></div>
           </div>
-          <div class="sticky-btn"><button class="btn btn-primary" style="width:100%" onClick=${addItem}>Agregar</button></div>
         </div>
       </div>
     </div>`}
@@ -800,7 +797,7 @@ function DocsTab({docs,setDocs}){
     ${showAdd&&html`<div class="modal-overlay open" onClick=${e=>{if(e.target.classList.contains('modal-overlay'))setShowAdd(false)}}>
       <div class="modal">
         <div class="modal-handle"></div>
-        <div class="modal-header"><span class="modal-title">Agregar documento</span><button class="btn-icon" onClick=${()=>setShowAdd(false)}>✕</button></div>
+        <div class="modal-header"><span class="modal-title">Agregar documento</span><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-primary btn-sm" onClick=${addDoc}>Guardar</button><button class="btn-icon" onClick=${()=>setShowAdd(false)}>✕</button></div></div>
         <div class="modal-body">
           <div class="field"><label class="label">Categoría</label><select class="input" value=${form.category} onChange=${e=>setForm(p=>({...p,category:e.target.value}))}>${cats.filter(c=>c!=='Todos').map(c=>html`<option value=${c}>${c}</option>`)}</select></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
@@ -812,7 +809,6 @@ function DocsTab({docs,setDocs}){
           <div class="field"><label class="label">Título</label><input class="input" placeholder="Ej: Reserva Hotel Praga" value=${form.title} onInput=${e=>setForm(p=>({...p,title:e.target.value}))}/></div>
           <div class="field"><label class="label">Dato / Código / Número</label><textarea class="input" placeholder="Número de reserva, código, teléfono, dirección..." value=${form.info} onInput=${e=>setForm(p=>({...p,info:e.target.value}))}></textarea></div>
           <div class="field"><label class="label">Ícono (emoji)</label><input class="input" value=${form.icon} onInput=${e=>setForm(p=>({...p,icon:e.target.value}))}/></div>
-          <div class="sticky-btn"><button class="btn btn-primary" style="width:100%;margin-bottom:4px" onClick=${addDoc}>Guardar</button></div>
           <input ref=${fileRef} type="file" accept="image/*,application/pdf" multiple style="display:none" onChange=${handleFile}/>
         </div>
       </div>

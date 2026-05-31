@@ -1,0 +1,13 @@
+{
+  "name": "Viaje Europa 2026-27",
+  "short_name": "Europa 🌍",
+  "description": "Planificador del viaje a Europa Diciembre 2026 - Enero 2027",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#0F172A",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

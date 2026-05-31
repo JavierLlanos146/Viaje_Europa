@@ -43,12 +43,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .btn-icon{width:36px;height:36px;border-radius:10px;background:var(--card2);border:none;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
 .modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 0 calc(16px + var(--safe-bot));transform:translateY(20px);transition:transform .25s}
+.modal{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-height:92vh;max-height:92dvh;display:flex;flex-direction:column;overflow:hidden;padding:0 0 calc(16px + var(--safe-bot));transform:translateY(20px);transition:transform .25s}
 .modal-overlay.open .modal{transform:translateY(0)}
-.modal-handle{width:36px;height:4px;background:var(--border);border-radius:4px;margin:12px auto 0}
-.modal-header{padding:16px 20px 8px;display:flex;align-items:center;justify-content:space-between}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:4px;margin:12px auto 0;flex-shrink:0}
+.modal-header{padding:16px 20px 8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .modal-title{font-size:17px;font-weight:700}
-.modal-body{padding:0 20px 8px}.sticky-btn{position:sticky;bottom:0;background:var(--card);padding:12px 0 4px;margin-top:4px}.wrap-text{white-space:normal!important;word-break:break-word;overflow:visible!important}
+.modal-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 20px 8px}.sticky-btn{position:sticky;bottom:0;background:var(--card);padding:12px 0 4px;margin-top:4px}.wrap-text{white-space:normal!important;word-break:break-word;overflow:visible!important}
 .input{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-size:15px;outline:none;transition:.15s}
 .input:focus{border-color:var(--blue)}
 .input::placeholder{color:var(--text3)}
@@ -335,7 +335,7 @@ function HomeTab({itin,totalExp,totalBud,urgentN,cur,setCur,rate,fetchRate,rl,se
   const[rateInput,setRateInput]=useState(String(rate));
   const saveRate=()=>{const v=parseInt(rateInput.replace(/\D/g,''));if(v>0){setRate(v);setEditRate(false)}};
   return html`<div>
-    <div class="page-header" style="padding-top:calc(var(--safe-top)+16px)">
+    <div class="page-header" style="padding-top:8px">
       <div><div style="font-size:13px;color:var(--text3)">Europa 2026-27 🌍</div><div class="page-title">¡Hola, Alejandro!</div></div>
       <div class="cur-toggle">
         <button class=${'cur-btn'+(cur==='EUR'?' active':'')} onClick=${()=>setCur('EUR')}>EUR</button>
@@ -429,7 +429,7 @@ function ItinTab({itin,setItin}){
   const del=id=>{if(confirm('¿Eliminar esta ciudad?'))setItin(p=>p.filter(c=>c.id!==id))};
 
   return html`<div>
-    <div class="page-header" style="padding-top:calc(var(--safe-top)+16px)">
+    <div class="page-header" style="padding-top:8px">
       <div class="page-title">🗺️ Itinerario</div>
       <button class="btn btn-primary btn-sm" onClick=${openAdd}>+ Ciudad</button>
     </div>
@@ -498,7 +498,7 @@ function ExpTab({exp,setExp,itin,cur,rate}){
   const del=id=>{if(confirm('¿Eliminar gasto?'))setExp(p=>p.filter(e=>e.id!==id))};
 
   return html`<div>
-    <div class="page-header" style="padding-top:calc(var(--safe-top)+16px)">
+    <div class="page-header" style="padding-top:8px">
       <div class="page-title">💸 Gastos</div>
       <button class="btn btn-primary btn-sm" onClick=${()=>setShowAdd(true)}>+ Gasto</button>
     </div>
@@ -563,7 +563,7 @@ function BudTab({bud,setBud,exp,itin,cur,rate}){
   const pct=grandBud>0?Math.min(100,(grandSpent/grandBud)*100):0;
 
   return html`<div>
-    <div class="page-header" style="padding-top:calc(var(--safe-top)+16px)"><div class="page-title">📊 Presupuesto</div></div>
+    <div class="page-header" style="padding-top:8px"><div class="page-title">📊 Presupuesto</div></div>
     <div class="card">
       <div style="display:flex;justify-content:space-between;margin-bottom:8px">
         <div><div style="font-size:12px;color:var(--text3)">Total estimado</div><div style="font-size:20px;font-weight:800;color:var(--blue)">${fmt(grandBud,cur,rate)}</div></div>
@@ -626,7 +626,7 @@ function ChkTab({chk,setChk}){
   const pct=total>0?Math.round((done/total)*100):0;
 
   return html`<div>
-    <div class="page-header" style="padding-top:calc(var(--safe-top)+16px)">
+    <div class="page-header" style="padding-top:8px">
       <div class="page-title">✅ Checklist</div>
       <button class="btn btn-primary btn-sm" onClick=${()=>setShowAdd(true)}>+ Item</button>
     </div>
@@ -719,7 +719,7 @@ function DocsTab({docs,setDocs}){
   const fmtSize=b=>{if(!b)return'';return b<1048576?(b/1024).toFixed(1)+'KB':(b/1048576).toFixed(1)+'MB'};
 
   return html`<div>
-    <div class="page-header" style="padding-top:calc(var(--safe-top)+16px)">
+    <div class="page-header" style="padding-top:8px">
       <div class="page-title">📁 Documentos</div>
       <button class="btn btn-primary btn-sm" onClick=${()=>setShowAdd(true)}>+ Agregar</button>
     </div>

@@ -553,10 +553,40 @@ function ExpTab({exp,setExp,itin,cur,rate}){
 function BudTab({bud,setBud,exp,itin,cur,rate}){
   const[ed,setEd]=useState(null);
   const[form,setForm]=useState({});
+  const[editCur,setEditCur]=useState('EUR');
   const getSpent=n=>exp.filter(e=>e.city===n).reduce((s,e)=>{const v=parseFloat(e.amount)||0;return s+(e.currency==='EUR'?v:v/rate)},0);
-  const openEd=id=>{setForm({...bud[id]});setEd(id)};
-  const save=()=>{setBud(p=>({...p,[ed]:form}));setEd(null)};
-  const upd=(k,v)=>setForm(p=>({...p,[k]:parseFloat(v)||0}));
+
+  const eurToDisplay=(eurVals,toCur)=>Object.fromEntries(Object.entries(eurVals).map(([k,v])=>[k,toCur==='COP'?Math.round(v*rate):v]));
+
+  const openEd=id=>{
+    const b=bud[id]||{accom:0,transport:0,food:0,activities:0,misc:0};
+    const c=cur;
+    setEditCur(c);
+    setForm(eurToDisplay(b,c));
+    setEd(id);
+  };
+
+  const changeEditCur=newCur=>{
+    if(newCur===editCur)return;
+    setForm(p=>Object.fromEntries(Object.entries(p).map(([k,v])=>[k,
+      newCur==='COP'?Math.round((parseFloat(v)||0)*rate):Math.round((parseFloat(v)||0)/rate)
+    ])));
+    setEditCur(newCur);
+  };
+
+  const save=()=>{
+    const eurForm=editCur==='COP'
+      ?Object.fromEntries(Object.entries(form).map(([k,v])=>[k,Math.round((parseFloat(v)||0)/rate)]))
+      :Object.fromEntries(Object.entries(form).map(([k,v])=>[k,parseFloat(v)||0]));
+    setBud(p=>({...p,[ed]:eurForm}));
+    setEd(null);
+  };
+
+  const upd=(k,v)=>setForm(p=>({...p,[k]:v}));
+  const formTotal=Object.values(form).reduce((s,v)=>s+(parseFloat(v)||0),0);
+  const formTotalEUR=editCur==='COP'?formTotal/rate:formTotal;
+  const edCity=ed!==null?itin.find(c=>c.id===ed):null;
+
   const cities=itin.filter(c=>c.nights>0);
   const grandBud=Object.values(bud).reduce((s,b)=>s+budgetTotal(b),0);
   const grandSpent=exp.reduce((s,e)=>{const v=parseFloat(e.amount)||0;return s+(e.currency==='EUR'?v:v/rate)},0);
@@ -600,11 +630,39 @@ function BudTab({bud,setBud,exp,itin,cur,rate}){
     ${ed!==null&&html`<div class="modal-overlay open" onClick=${e=>{if(e.target.classList.contains('modal-overlay'))setEd(null)}}>
       <div class="modal">
         <div class="modal-handle"></div>
-        <div class="modal-header"><span class="modal-title">Editar presupuesto (EUR total grupo)</span><button class="btn-icon" onClick=${()=>setEd(null)}>✕</button></div>
+        <div class="modal-header">
+          <span class="modal-title">${edCity?.emoji} ${edCity?.city}</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="cur-toggle">
+              <button class=${'cur-btn'+(editCur==='EUR'?' active':'')} onClick=${()=>changeEditCur('EUR')}>EUR</button>
+              <button class=${'cur-btn'+(editCur==='COP'?' active':'')} onClick=${()=>changeEditCur('COP')}>COP</button>
+            </div>
+            <button class="btn-icon" onClick=${()=>setEd(null)}>✕</button>
+          </div>
+        </div>
         <div class="modal-body">
-          ${[['accom','🏨 Alojamiento'],['transport','🚆 Transporte salida'],['food','🍽️ Comida'],['activities','🎟️ Actividades/Entradas'],['misc','📌 Extras/Imprevistos']].map(([k,lb])=>html`<div class="field"><label class="label">${lb}</label><input class="input" type="number" step="1" value=${form[k]||0} onInput=${e=>upd(k,e.target.value)}/></div>`)}
-          <div style="padding:10px;background:var(--card2);border-radius:10px;margin-bottom:14px;text-align:center"><span style="font-size:12px;color:var(--text2)">Total: </span><span style="font-size:18px;font-weight:800;color:var(--blue)">€${budgetTotal(form).toLocaleString('es')}</span></div>
-          <div class="sticky-btn"><button class="btn btn-primary" style="width:100%" onClick=${save}>Guardar</button></div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:12px;background:var(--card2);padding:8px 10px;border-radius:8px">
+            Ingresá los valores en <strong style="color:var(--blue)">${editCur==='EUR'?'Euros €':'Pesos colombianos $'}</strong>. Podés cambiar la moneda arriba.
+          </div>
+          ${[['accom','🏨 Alojamiento'],['transport','🚆 Transporte'],['food','🍽️ Comida'],['activities','🎟️ Actividades'],['misc','📌 Extras']].map(([k,lb])=>html`
+            <div class="field">
+              <label class="label">${lb}</label>
+              <div style="position:relative">
+                <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;font-weight:700;pointer-events:none">${editCur==='EUR'?'€':'$'}</span>
+                <input class="input" style="padding-left:26px" type="number" step="1" min="0"
+                  value=${form[k]||0} onInput=${e=>upd(k,e.target.value)}/>
+              </div>
+            </div>`)}
+          <div style="padding:12px;background:var(--card2);border-radius:10px;margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:12px;color:var(--text2);font-weight:600">Total ciudad</span>
+              <div style="text-align:right">
+                <div style="font-size:20px;font-weight:800;color:var(--blue)">${editCur==='EUR'?'€':'$'}${Math.round(formTotal).toLocaleString('es')}</div>
+                <div style="font-size:11px;color:var(--text3)">${editCur==='COP'?'≈ €'+Math.round(formTotalEUR).toLocaleString('es'):'≈ $'+Math.round(formTotal*rate).toLocaleString('es')+' COP'}</div>
+              </div>
+            </div>
+          </div>
+          <div class="sticky-btn"><button class="btn btn-primary" style="width:100%" onClick=${save}>Guardar presupuesto</button></div>
         </div>
       </div>
     </div>`}

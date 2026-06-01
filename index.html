@@ -1,3323 +1,904 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width,initial-scale=1,viewport-fit=cover"
-    />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
-    <meta name="apple-mobile-web-app-title" content="Europa 🌍" />
-    <meta name="theme-color" content="#0F172A" />
-    <link rel="manifest" href="manifest.json" />
-    <title>Viaje Europa 2026</title>
-    <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        -webkit-tap-highlight-color: transparent;
-      }
-      :root {
-        --bg: #0f172a;
-        --card: #1e293b;
-        --card2: #273549;
-        --border: #334155;
-        --blue: #3b82f6;
-        --blue2: #2563eb;
-        --green: #10b981;
-        --amber: #f59e0b;
-        --red: #ef4444;
-        --purple: #8b5cf6;
-        --teal: #14b8a6;
-        --text: #f1f5f9;
-        --text2: #94a3b8;
-        --text3: #64748b;
-        --nav-h: 72px;
-        --safe-top: env(safe-area-inset-top, 0px);
-        --safe-bot: env(safe-area-inset-bottom, 0px);
-      }
-      html,
-      body {
-        height: 100%;
-        background: var(--bg);
-        color: var(--text);
-        font-family:
-          -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-        overflow: hidden;
-      }
-      #app {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-      }
-      .screen {
-        flex: 1;
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding-bottom: calc(var(--nav-h) + var(--safe-bot) + 8px);
-        padding-top: calc(var(--safe-top) + 8px);
-        -webkit-overflow-scrolling: touch;
-      }
-      .screen::-webkit-scrollbar {
-        display: none;
-      }
-      .nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: calc(var(--nav-h) + var(--safe-bot));
-        background: rgba(15, 23, 42, 0.95);
-        backdrop-filter: blur(20px);
-        border-top: 1px solid var(--border);
-        display: flex;
-        align-items: flex-start;
-        padding-top: 8px;
-        padding-bottom: var(--safe-bot);
-        z-index: 100;
-      }
-      .nav-btn {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 3px;
-        background: none;
-        border: none;
-        color: var(--text3);
-        cursor: pointer;
-        padding: 4px 0;
-        transition: color 0.2s;
-      }
-      .nav-btn.active {
-        color: var(--blue);
-      }
-      .nav-btn svg {
-        width: 22px;
-        height: 22px;
-      }
-      .nav-label {
-        font-size: 10px;
-        font-weight: 600;
-      }
-      .card {
-        background: var(--card);
-        border-radius: 16px;
-        padding: 16px;
-        margin: 0 16px 12px;
-      }
-      .card-sm {
-        background: var(--card);
-        border-radius: 12px;
-        padding: 12px;
-        margin-bottom: 8px;
-      }
-      .section-title {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--text3);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        margin: 20px 16px 8px;
-      }
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 8px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-      }
-      .badge-blue {
-        background: rgba(59, 130, 246, 0.15);
-        color: var(--blue);
-      }
-      .badge-green {
-        background: rgba(16, 185, 129, 0.15);
-        color: var(--green);
-      }
-      .badge-amber {
-        background: rgba(245, 158, 11, 0.15);
-        color: var(--amber);
-      }
-      .badge-red {
-        background: rgba(239, 68, 68, 0.15);
-        color: var(--red);
-      }
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        padding: 10px 18px;
-        border-radius: 12px;
-        border: none;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: 0.15s;
-      }
-      .btn-primary {
-        background: var(--blue);
-        color: #fff;
-      }
-      .btn-primary:active {
-        background: var(--blue2);
-      }
-      .btn-ghost {
-        background: var(--card2);
-        color: var(--text);
-      }
-      .btn-sm {
-        padding: 6px 12px;
-        font-size: 12px;
-        border-radius: 8px;
-      }
-      .btn-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        background: var(--card2);
-        border: none;
-        color: var(--text2);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-      }
-      .modal-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 200;
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s;
-      }
-      .modal-overlay.open {
-        opacity: 1;
-        pointer-events: all;
-      }
-      .modal {
-        background: var(--card);
-        border-radius: 24px 24px 0 0;
-        width: 100%;
-        max-height: 92vh;
-        max-height: 92dvh;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        padding: 0 0 calc(16px + var(--safe-bot));
-        transform: translateY(20px);
-        transition: transform 0.25s;
-      }
-      .modal-overlay.open .modal {
-        transform: translateY(0);
-      }
-      .modal-handle {
-        width: 36px;
-        height: 4px;
-        background: var(--border);
-        border-radius: 4px;
-        margin: 12px auto 0;
-        flex-shrink: 0;
-      }
-      .modal-header {
-        padding: 16px 20px 8px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-shrink: 0;
-      }
-      .modal-title {
-        font-size: 17px;
-        font-weight: 700;
-      }
-      .modal-body {
-        flex: 1;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        padding: 0 20px 8px;
-      }
-      .sticky-btn {
-        position: sticky;
-        bottom: 0;
-        background: var(--card);
-        padding: 12px 0 4px;
-        margin-top: 4px;
-      }
-      .wrap-text {
-        white-space: normal !important;
-        word-break: break-word;
-        overflow: visible !important;
-      }
-      .input {
-        width: 100%;
-        background: var(--card2);
-        border: 1.5px solid var(--border);
-        border-radius: 12px;
-        padding: 12px 14px;
-        color: var(--text);
-        font-size: 15px;
-        outline: none;
-        transition: 0.15s;
-      }
-      .input:focus {
-        border-color: var(--blue);
-      }
-      .input::placeholder {
-        color: var(--text3);
-      }
-      .label {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text2);
-        margin-bottom: 6px;
-        display: block;
-      }
-      .field {
-        margin-bottom: 14px;
-      }
-      select.input {
-        -webkit-appearance: none;
-      }
-      textarea.input {
-        resize: none;
-        min-height: 80px;
-      }
-      .progress-bar {
-        height: 6px;
-        background: var(--card2);
-        border-radius: 4px;
-        overflow: hidden;
-      }
-      .progress-fill {
-        height: 100%;
-        border-radius: 4px;
-        transition: width 0.4s;
-      }
-      .toggle-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 0;
-        border-bottom: 1px solid var(--border);
-      }
-      .toggle-row:last-child {
-        border-bottom: none;
-      }
-      .checkbox {
-        width: 22px;
-        height: 22px;
-        border-radius: 6px;
-        border: 2px solid var(--border);
-        background: transparent;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        transition: 0.15s;
-      }
-      .checkbox.checked {
-        background: var(--green);
-        border-color: var(--green);
-        color: #fff;
-      }
-      .expense-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 0;
-        border-bottom: 1px solid var(--border);
-      }
-      .expense-row:last-child {
-        border-bottom: none;
-      }
-      .cat-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        flex-shrink: 0;
-      }
-      .doc-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 0;
-        border-bottom: 1px solid var(--border);
-      }
-      .doc-row:last-child {
-        border-bottom: none;
-      }
-      .doc-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        flex-shrink: 0;
-        background: var(--card2);
-      }
-      .stat-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        margin: 0 16px 12px;
-      }
-      .stat-card {
-        background: var(--card);
-        border-radius: 14px;
-        padding: 14px;
-        text-align: center;
-      }
-      .stat-val {
-        font-size: 20px;
-        font-weight: 800;
-        margin-bottom: 2px;
-      }
-      .stat-lbl {
-        font-size: 11px;
-        color: var(--text2);
-      }
-      .countdown {
-        background: linear-gradient(135deg, #1e3a5f, #1e293b);
-        border-radius: 20px;
-        padding: 20px;
-        margin: 0 16px 16px;
-        text-align: center;
-        border: 1px solid rgba(59, 130, 246, 0.2);
-      }
-      .cd-days {
-        font-size: 56px;
-        font-weight: 900;
-        color: var(--blue);
-        line-height: 1;
-      }
-      .cd-label {
-        font-size: 14px;
-        color: var(--text2);
-        margin-top: 4px;
-      }
-      .cd-date {
-        font-size: 12px;
-        color: var(--text3);
-        margin-top: 2px;
-      }
-      .page-header {
-        padding: 16px 16px 4px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .page-title {
-        font-size: 24px;
-        font-weight: 800;
-      }
-      .filter-row {
-        display: flex;
-        gap: 6px;
-        padding: 0 16px 8px;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-      .filter-row::-webkit-scrollbar {
-        display: none;
-      }
-      .filter-chip {
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
-        white-space: nowrap;
-        cursor: pointer;
-        border: 1.5px solid var(--border);
-        background: transparent;
-        color: var(--text2);
-        transition: 0.15s;
-      }
-      .filter-chip.active {
-        background: var(--blue);
-        border-color: var(--blue);
-        color: #fff;
-      }
-      .alert {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 12px;
-        border-radius: 12px;
-        margin: 0 16px 8px;
-      }
-      .alert-red {
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.2);
-      }
-      .budget-city {
-        background: var(--card);
-        border-radius: 14px;
-        padding: 14px;
-        margin: 0 16px 10px;
-      }
-      .empty {
-        text-align: center;
-        padding: 48px 20px;
-        color: var(--text3);
-      }
-      .empty-icon {
-        font-size: 48px;
-        margin-bottom: 12px;
-      }
-      .cur-toggle {
-        display: flex;
-        background: var(--card2);
-        border-radius: 10px;
-        padding: 2px;
-        gap: 2px;
-      }
-      .cur-btn {
-        padding: 5px 12px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 700;
-        border: none;
-        cursor: pointer;
-        transition: 0.15s;
-        background: transparent;
-        color: var(--text3);
-      }
-      .cur-btn.active {
-        background: var(--blue);
-        color: #fff;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module">
-      import { h, render } from "https://esm.sh/preact@10.23.2";
-      import {
-        useState,
-        useEffect,
-        useCallback,
-        useRef,
-        useMemo,
-      } from "https://esm.sh/preact@10.23.2/hooks";
-      import htm from "https://esm.sh/htm@3.1.1";
-      const html = htm.bind(h);
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Europa 🌍">
+<meta name="theme-color" content="#0F172A">
+<link rel="manifest" href="manifest.json">
+<title>Viaje Europa 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0F172A;--card:#1E293B;--card2:#273549;--border:#334155;
+  --blue:#3B82F6;--blue2:#2563EB;--green:#10B981;--amber:#F59E0B;
+  --red:#EF4444;--purple:#8B5CF6;--teal:#14B8A6;
+  --text:#F1F5F9;--text2:#94A3B8;--text3:#64748B;
+  --nav-h:72px;--safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;overflow:hidden}
+#app{height:100%;display:flex;flex-direction:column}
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(var(--nav-h) + var(--safe-bot) + 8px);padding-top:calc(var(--safe-top) + 8px);-webkit-overflow-scrolling:touch}
+.screen::-webkit-scrollbar{display:none}
+.nav{position:fixed;bottom:0;left:0;right:0;height:calc(var(--nav-h) + var(--safe-bot));background:rgba(15,23,42,.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:flex-start;padding-top:8px;padding-bottom:var(--safe-bot);z-index:100}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--text3);cursor:pointer;padding:4px 0;transition:color .2s}
+.nav-btn.active{color:var(--blue)}
+.nav-btn svg{width:22px;height:22px}
+.nav-label{font-size:10px;font-weight:600}
+.card{background:var(--card);border-radius:16px;padding:16px;margin:0 16px 12px}
+.card-sm{background:var(--card);border-radius:12px;padding:12px;margin-bottom:8px}
+.section-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:20px 16px 8px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-blue{background:rgba(59,130,246,.15);color:var(--blue)}
+.badge-green{background:rgba(16,185,129,.15);color:var(--green)}
+.badge-amber{background:rgba(245,158,11,.15);color:var(--amber)}
+.badge-red{background:rgba(239,68,68,.15);color:var(--red)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border-radius:12px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:active{background:var(--blue2)}
+.btn-ghost{background:var(--card2);color:var(--text)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:8px}
+.btn-icon{width:36px;height:36px;border-radius:10px;background:var(--card2);border:none;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-height:92vh;max-height:92dvh;display:flex;flex-direction:column;overflow:hidden;padding:0 0 calc(16px + var(--safe-bot));transform:translateY(20px);transition:transform .25s}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:4px;margin:12px auto 0;flex-shrink:0}
+.modal-header{padding:16px 20px 8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-size:17px;font-weight:700}
+.modal-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 20px 8px}.sticky-btn{position:sticky;bottom:0;background:var(--card);padding:12px 0 4px;margin-top:4px}.wrap-text{white-space:normal!important;word-break:break-word;overflow:visible!important}
+.input{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-size:15px;outline:none;transition:.15s}
+.input:focus{border-color:var(--blue)}
+.input::placeholder{color:var(--text3)}
+.label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;display:block}
+.field{margin-bottom:14px}
+select.input{-webkit-appearance:none}
+textarea.input{resize:none;min-height:80px}
+.progress-bar{height:6px;background:var(--card2);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;transition:width .4s}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-child{border-bottom:none}
+.checkbox{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s}
+.checkbox.checked{background:var(--green);border-color:var(--green);color:#fff}
+.expense-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.expense-row:last-child{border-bottom:none}
+.cat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.doc-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.doc-row:last-child{border-bottom:none}
+.doc-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;background:var(--card2)}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 16px 12px}
+.stat-card{background:var(--card);border-radius:14px;padding:14px;text-align:center}
+.stat-val{font-size:20px;font-weight:800;margin-bottom:2px}
+.stat-lbl{font-size:11px;color:var(--text2)}
+.countdown{background:linear-gradient(135deg,#1E3A5F,#1E293B);border-radius:20px;padding:20px;margin:0 16px 16px;text-align:center;border:1px solid rgba(59,130,246,.2)}
+.cd-days{font-size:56px;font-weight:900;color:var(--blue);line-height:1}
+.cd-label{font-size:14px;color:var(--text2);margin-top:4px}
+.cd-date{font-size:12px;color:var(--text3);margin-top:2px}
+.page-header{padding:16px 16px 4px;display:flex;align-items:center;justify-content:space-between}
+.page-title{font-size:24px;font-weight:800}
+.filter-row{display:flex;gap:6px;padding:0 16px 8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.filter-row::-webkit-scrollbar{display:none}
+.filter-chip{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--text2);transition:.15s}
+.filter-chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.alert{display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:12px;margin:0 16px 8px}
+.alert-red{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2)}
+.budget-city{background:var(--card);border-radius:14px;padding:14px;margin:0 16px 10px}
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.cur-toggle{display:flex;background:var(--card2);border-radius:10px;padding:2px;gap:2px}
+.cur-btn{padding:5px 12px;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer;transition:.15s;background:transparent;color:var(--text3)}
+.cur-btn.active{background:var(--blue);color:#fff}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script type="module">
+import{h,render}from'https://esm.sh/preact@10.23.2';
+import{useState,useEffect,useCallback,useRef,useMemo}from'https://esm.sh/preact@10.23.2/hooks';
+import htm from'https://esm.sh/htm@3.1.1';
+const html=htm.bind(h);
 
-      // ══════════════════ DATA ══════════════════
-      const INIT_ITINERARY = [
-        {
-          id: 1,
-          emoji: "🇪🇸",
-          city: "Madrid",
-          country: "España",
-          dates: "16 dic 2026",
-          nights: 1,
-          pax: 3,
-          transport: "Escala 24h · Llegan MAD 15:40",
-          special: "",
-          startDate: "2026-12-16",
-        },
-        {
-          id: 2,
-          emoji: "🇮🇹",
-          city: "Milán",
-          country: "Italia",
-          dates: "17–18 dic 2026",
-          nights: 1,
-          pax: 4,
-          transport: "Vuelo AM6849 · MAD 15:10 → MXP 17:20",
-          special: "🤝 Se une el tío",
-          startDate: "2026-12-17",
-        },
-        {
-          id: 3,
-          emoji: "🇮🇹",
-          city: "Roma",
-          country: "Italia",
-          dates: "18–20 dic 2026",
-          nights: 2,
-          pax: 4,
-          transport: "Frecciarossa 06:05 MXP → Roma 09:00",
-          special: "🏛️ Vaticano · Coliseo",
-          startDate: "2026-12-18",
-        },
-        {
-          id: 4,
-          emoji: "🇪🇸",
-          city: "Barcelona",
-          country: "España",
-          dates: "21–22 dic 2026",
-          nights: 2,
-          pax: 4,
-          transport: "Vuelo Roma → Barcelona ~1.5h",
-          special: "⛪ Sagrada Familia",
-          startDate: "2026-12-21",
-        },
-        {
-          id: 5,
-          emoji: "🇪🇸",
-          city: "Madrid — Navidad",
-          country: "España",
-          dates: "23–25 dic 2026",
-          nights: 3,
-          pax: 4,
-          transport: "AVE Barcelona → Madrid ~2.5h",
-          special: "🎄 NAVIDAD",
-          startDate: "2026-12-23",
-        },
-        {
-          id: 6,
-          emoji: "🇫🇷",
-          city: "París",
-          country: "Francia",
-          dates: "26–27 dic 2026",
-          nights: 2,
-          pax: 4,
-          transport: "Vuelo Madrid → París",
-          special: "🗼 Torre · Louvre · Orsay",
-          startDate: "2026-12-26",
-        },
-        {
-          id: 7,
-          emoji: "🇧🇪",
-          city: "Bruselas + Brujas",
-          country: "Bélgica",
-          dates: "28–30 dic 2026",
-          nights: 3,
-          pax: 4,
-          transport: "Thalys París → Bruselas 1h22",
-          special: "🍺 Brujas day trip",
-          startDate: "2026-12-28",
-        },
-        {
-          id: 8,
-          emoji: "🇳🇱",
-          city: "Ámsterdam",
-          country: "Países Bajos",
-          dates: "30 dic – 1 ene 2027",
-          nights: 2,
-          pax: 4,
-          transport: "Thalys Bruselas → Ámsterdam 1h50",
-          special: "🎆 AÑO NUEVO",
-          startDate: "2026-12-30",
-        },
-        {
-          id: 9,
-          emoji: "🇸🇪",
-          city: "Estocolmo",
-          country: "Suecia",
-          dates: "2–5 ene 2027",
-          nights: 4,
-          pax: 4,
-          transport: "Vuelo Ámsterdam → Estocolmo ~2h",
-          special: "🏠 GRATIS · 4 noches",
-          startDate: "2027-01-02",
-        },
-        {
-          id: 10,
-          emoji: "🛳️",
-          city: "Ferry nocturno",
-          country: "Mar Báltico",
-          dates: "Noche 5 ene 2027",
-          nights: 0,
-          pax: 4,
-          transport: "Tallink Silja · Värtahamnen 18:00 → Tallin 10:30",
-          special: "🌊 Crucero Báltico",
-          startDate: "2027-01-05",
-        },
-        {
-          id: 11,
-          emoji: "🇪🇪",
-          city: "Tallin",
-          country: "Estonia",
-          dates: "6–7 ene 2027",
-          nights: 2,
-          pax: 4,
-          transport: "Llegan en ferry ~10:30",
-          special: "🏰 Ciudad medieval",
-          startDate: "2027-01-06",
-        },
-        {
-          id: 12,
-          emoji: "🇫🇮",
-          city: "Helsinki",
-          country: "Finlandia",
-          dates: "8–9 ene 2027",
-          nights: 2,
-          pax: 4,
-          transport: "Ferry Eckero Line ~2h",
-          special: "🧖 Sauna finlandesa",
-          startDate: "2027-01-08",
-        },
-        {
-          id: 13,
-          emoji: "🇫🇮",
-          city: "Rovaniemi",
-          country: "Finlandia · Laponia",
-          dates: "10–12 ene 2027",
-          nights: 3,
-          pax: 4,
-          transport: "Vuelo Finnair HEL→RVN ~1h",
-          special: "🌌 AURORAS BOREALES",
-          startDate: "2027-01-10",
-        },
-        {
-          id: 14,
-          emoji: "🇸🇪",
-          city: "Estocolmo",
-          country: "Suecia",
-          dates: "13–14 ene 2027",
-          nights: 2,
-          pax: 4,
-          transport: "Vuelo Finnair RVN→ARN ~2.5h",
-          special: "🏠 GRATIS · Descanso",
-          startDate: "2027-01-13",
-        },
-        {
-          id: 15,
-          emoji: "🇨🇿",
-          city: "Praga",
-          country: "Rep. Checa",
-          dates: "15–17 ene 2027",
-          nights: 3,
-          pax: 4,
-          transport: "Vuelo SAS/Wizz ARN→PRG ~2.5h",
-          special: "🏰 Castillo · Barrio Judío",
-          startDate: "2027-01-15",
-        },
-        {
-          id: 16,
-          emoji: "🇮🇹",
-          city: "Milán — Regreso",
-          country: "Italia",
-          dates: "18 ene 2027",
-          nights: 1,
-          pax: 4,
-          transport: "Vuelo Ryanair/easyJet PRG→MXP",
-          special: "✈️ Vuelo 19 ene LIN 17:20",
-          startDate: "2027-01-18",
-        },
-      ];
+// ══════════════════ DATA ══════════════════
+const INIT_ITINERARY=[
+  {id:1, emoji:'🇪🇸',city:'Madrid',country:'España',dates:'16 dic 2026',nights:1,pax:3,transport:'Escala 24h · Llegan MAD 15:40',special:'',startDate:'2026-12-16'},
+  {id:2, emoji:'🇮🇹',city:'Milán',country:'Italia',dates:'17–18 dic 2026',nights:1,pax:4,transport:'Vuelo AM6849 · MAD 15:10 → MXP 17:20',special:'🤝 Se une el tío',startDate:'2026-12-17'},
+  {id:3, emoji:'🇮🇹',city:'Roma',country:'Italia',dates:'18–20 dic 2026',nights:2,pax:4,transport:'Frecciarossa 06:05 MXP → Roma 09:00',special:'🏛️ Vaticano · Coliseo',startDate:'2026-12-18'},
+  {id:4, emoji:'🇪🇸',city:'Barcelona',country:'España',dates:'21–22 dic 2026',nights:2,pax:4,transport:'Vuelo Roma → Barcelona ~1.5h',special:'⛪ Sagrada Familia',startDate:'2026-12-21'},
+  {id:5, emoji:'🇪🇸',city:'Madrid — Navidad',country:'España',dates:'23–25 dic 2026',nights:3,pax:4,transport:'AVE Barcelona → Madrid ~2.5h',special:'🎄 NAVIDAD',startDate:'2026-12-23'},
+  {id:6, emoji:'🇫🇷',city:'París',country:'Francia',dates:'26–27 dic 2026',nights:2,pax:4,transport:'Vuelo Madrid → París',special:'🗼 Torre · Louvre · Orsay',startDate:'2026-12-26'},
+  {id:7, emoji:'🇧🇪',city:'Bruselas + Brujas',country:'Bélgica',dates:'28–30 dic 2026',nights:3,pax:4,transport:'Thalys París → Bruselas 1h22',special:'🍺 Brujas day trip',startDate:'2026-12-28'},
+  {id:8, emoji:'🇳🇱',city:'Ámsterdam',country:'Países Bajos',dates:'30 dic – 1 ene 2027',nights:2,pax:4,transport:'Thalys Bruselas → Ámsterdam 1h50',special:'🎆 AÑO NUEVO',startDate:'2026-12-30'},
+  {id:9, emoji:'🇸🇪',city:'Estocolmo',country:'Suecia',dates:'2–5 ene 2027',nights:4,pax:4,transport:'Vuelo Ámsterdam → Estocolmo ~2h',special:'🏠 GRATIS · 4 noches',startDate:'2027-01-02'},
+  {id:10,emoji:'🛳️',city:'Ferry nocturno',country:'Mar Báltico',dates:'Noche 5 ene 2027',nights:0,pax:4,transport:'Tallink Silja · Värtahamnen 18:00 → Tallin 10:30',special:'🌊 Crucero Báltico',startDate:'2027-01-05'},
+  {id:11,emoji:'🇪🇪',city:'Tallin',country:'Estonia',dates:'6–7 ene 2027',nights:2,pax:4,transport:'Llegan en ferry ~10:30',special:'🏰 Ciudad medieval',startDate:'2027-01-06'},
+  {id:12,emoji:'🇫🇮',city:'Helsinki',country:'Finlandia',dates:'8–9 ene 2027',nights:2,pax:4,transport:'Ferry Eckero Line ~2h',special:'🧖 Sauna finlandesa',startDate:'2027-01-08'},
+  {id:13,emoji:'🇫🇮',city:'Rovaniemi',country:'Finlandia · Laponia',dates:'10–12 ene 2027',nights:3,pax:4,transport:'Vuelo Finnair HEL→RVN ~1h',special:'🌌 AURORAS BOREALES',startDate:'2027-01-10'},
+  {id:14,emoji:'🇸🇪',city:'Estocolmo',country:'Suecia',dates:'13–14 ene 2027',nights:2,pax:4,transport:'Vuelo Finnair RVN→ARN ~2.5h',special:'🏠 GRATIS · Descanso',startDate:'2027-01-13'},
+  {id:15,emoji:'🇨🇿',city:'Praga',country:'Rep. Checa',dates:'15–17 ene 2027',nights:3,pax:4,transport:'Vuelo SAS/Wizz ARN→PRG ~2.5h',special:'🏰 Castillo · Barrio Judío',startDate:'2027-01-15'},
+  {id:16,emoji:'🇮🇹',city:'Milán — Regreso',country:'Italia',dates:'18 ene 2027',nights:1,pax:4,transport:'Vuelo Ryanair/easyJet PRG→MXP',special:'✈️ Vuelo 19 ene LIN 17:20',startDate:'2027-01-18'},
+];
 
-      const INIT_BUDGETS = {
-        1: { accom: 90, transport: 40, food: 120, activities: 20, misc: 20 },
-        2: { accom: 155, transport: 180, food: 200, activities: 120, misc: 30 },
-        3: { accom: 400, transport: 300, food: 480, activities: 340, misc: 40 },
-        4: { accom: 370, transport: 180, food: 320, activities: 220, misc: 30 },
-        5: { accom: 750, transport: 280, food: 600, activities: 140, misc: 50 },
-        6: { accom: 520, transport: 180, food: 520, activities: 300, misc: 40 },
-        7: { accom: 630, transport: 300, food: 600, activities: 320, misc: 40 },
-        8: { accom: 760, transport: 360, food: 480, activities: 220, misc: 40 },
-        9: { accom: 0, transport: 440, food: 560, activities: 200, misc: 40 },
-        11: { accom: 330, transport: 120, food: 240, activities: 48, misc: 20 },
-        12: {
-          accom: 420,
-          transport: 380,
-          food: 360,
-          activities: 260,
-          misc: 30,
-        },
-        13: {
-          accom: 630,
-          transport: 520,
-          food: 480,
-          activities: 1200,
-          misc: 60,
-        },
-        14: { accom: 0, transport: 360, food: 360, activities: 160, misc: 30 },
-        15: {
-          accom: 630,
-          transport: 260,
-          food: 560,
-          activities: 180,
-          misc: 40,
-        },
-        16: { accom: 140, transport: 0, food: 180, activities: 40, misc: 20 },
-      };
+const INIT_BUDGETS={
+  1: {accom:90,  transport:40,  food:120, activities:20,  misc:20},
+  2: {accom:155, transport:180, food:200, activities:120, misc:30},
+  3: {accom:400, transport:300, food:480, activities:340, misc:40},
+  4: {accom:370, transport:180, food:320, activities:220, misc:30},
+  5: {accom:750, transport:280, food:600, activities:140, misc:50},
+  6: {accom:520, transport:180, food:520, activities:300, misc:40},
+  7: {accom:630, transport:300, food:600, activities:320, misc:40},
+  8: {accom:760, transport:360, food:480, activities:220, misc:40},
+  9: {accom:0,   transport:440, food:560, activities:200, misc:40},
+  11:{accom:330, transport:120, food:240, activities:48,  misc:20},
+  12:{accom:420, transport:380, food:360, activities:260, misc:30},
+  13:{accom:630, transport:520, food:480, activities:1200,misc:60},
+  14:{accom:0,   transport:360, food:360, activities:160, misc:30},
+  15:{accom:630, transport:260, food:560, activities:180, misc:40},
+  16:{accom:140, transport:0,   food:180, activities:40,  misc:20},
+};
 
-      const INIT_CHECKLIST = {
-        "📄 Documentos y Trámites": [
-          {
-            id: "d1",
-            text: "Visa Schengen — Alejandro (Embajada Italia, Bogotá)",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "d2",
-            text: "Visa Schengen — Valentina",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "d3",
-            text: "Visa Schengen — Gustavo (suegro)",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "d4",
-            text: "Pasaporte vigente +6 meses — Alejandro",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "d5",
-            text: "Pasaporte vigente +6 meses — Valentina",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "d6",
-            text: "Pasaporte vigente +6 meses — Gustavo",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "d7",
-            text: "Seguro médico internacional (mín. €30.000 cobertura)",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "d8",
-            text: "Escaneos digitales en Google Drive / iCloud",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "d9",
-            text: "Carta de trabajo + extractos bancarios 3 meses",
-            done: false,
-            urgent: false,
-          },
-        ],
-        "✈️ Vuelos y Transportes": [
-          {
-            id: "t1",
-            text: "✅ Vuelo BOG→MAD→MXP (Despegar #183490346900 · SXYPIM)",
-            done: true,
-            urgent: false,
-          },
-          {
-            id: "t2",
-            text: "✅ Vuelo LIN→AMS→MEX→BOG (AM3EDU · incluido)",
-            done: true,
-            urgent: false,
-          },
-          {
-            id: "t3",
-            text: "Frecciarossa Milán→Roma (trenitalia.com)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "t4",
-            text: "Vuelo Roma→Barcelona (Vueling/Ryanair)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "t5",
-            text: "AVE Barcelona→Madrid (renfe.com)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "t6",
-            text: "Vuelo Madrid→París (Iberia/Vueling)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "t7",
-            text: "Thalys París→Bruselas (thalys.com)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "t8",
-            text: "Thalys Bruselas→Ámsterdam (thalys.com)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "t9",
-            text: "Vuelo Ámsterdam→Estocolmo (KLM/SAS)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "t10",
-            text: "🚨 Ferry Estocolmo→Tallin (Tallink Silja · tallinksilja.com)",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "t11",
-            text: "Ferry Tallin→Helsinki (Eckero Line · eckeroline.fi)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "t12",
-            text: "🚨 Vuelo Helsinki→Rovaniemi (Finnair · finnair.com)",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "t13",
-            text: "Vuelo Rovaniemi→Estocolmo (Finnair)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "t14",
-            text: "Vuelo Estocolmo→Praga (SAS/Wizz)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "t15",
-            text: "Vuelo Praga→Milán (easyJet/Ryanair)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "t16",
-            text: "Bus ATM 73 Piazza San Babila→Linate (2 EUR · 25 min)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "t17",
-            text: "Tren excursión Bruselas↔Brujas (belgiantrain.be)",
-            done: false,
-            urgent: false,
-          },
-        ],
-        "🏨 Alojamiento": [
-          {
-            id: "a1",
-            text: "Airbnb Madrid La Latina (1 noche · 16 dic)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "a2",
-            text: "Hotel Milán cerca Centrale (1 noche · 17 dic)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "a3",
-            text: "Airbnb Roma Trastevere (2 noches · 18-19 dic)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "a4",
-            text: "Airbnb Barcelona centro (2 noches · 21-22 dic)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "a5",
-            text: "🚨 Hotel Madrid NAVIDAD (3 noches · 23-25 dic) — RESERVAR YA",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "a6",
-            text: "Airbnb París Le Marais (2 noches · 26-27 dic)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "a7",
-            text: "Hotel Bruselas Grand Place (3 noches · 28-30 dic)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "a8",
-            text: "🚨 Hotel Ámsterdam NYE (2 noches · 30-31 dic) — RESERVAR YA",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "a9",
-            text: "✅ Estocolmo (6 noches total: 2-5 ene + 13-14 ene) — Casa amigos GRATIS",
-            done: true,
-            urgent: false,
-          },
-          {
-            id: "a10",
-            text: "Hotel Tallin ciudad vieja (2 noches · 6-7 ene)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "a11",
-            text: "Airbnb Helsinki (2 noches · 8-9 ene)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "a12",
-            text: "🚨 Hotel Rovaniemi o Glass Igloo (3 noches · 10-12 ene)",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "a13",
-            text: "Hotel Praga centro (3 noches · 15-17 ene)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "a14",
-            text: "Hotel cerca Linate Milán (1 noche · 18 ene)",
-            done: false,
-            urgent: false,
-          },
-        ],
-        "🎟️ Actividades — Reservar anticipado": [
-          {
-            id: "act1",
-            text: "🚨 Museos Vaticanos + Capilla Sixtina (museivaticani.va)",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "act2",
-            text: "🚨 Coliseo + Foro Romano (parcocolosseo.it)",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "act3",
-            text: "🚨 Sagrada Familia Barcelona (sagradafamilia.org)",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "act4",
-            text: "🚨 Tour Aurora Boreal Rovaniemi (safaris.fi)",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "act5",
-            text: "🚨 Husky Safari (bearhillhusky.com)",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "act6",
-            text: "🚨 Trineo de renos (santasafaris.fi)",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "act7",
-            text: "Museo Anne Frank Ámsterdam (annefrank.org)",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "act8",
-            text: "Rijksmuseum o Van Gogh Ámsterdam — elegir uno",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "act9",
-            text: "Park Güell Barcelona (parkguell.barcelona)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "act10",
-            text: "Panteón Roma (pantheonroma.com)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "act11",
-            text: "Cena de Navidad Madrid 24 dic — RESERVAR con anticipación",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "act12",
-            text: "Restaurante NYE Ámsterdam 31 dic — RESERVAR URGENTE",
-            done: false,
-            urgent: true,
-          },
-        ],
-        "🧳 Ropa y Equipaje": [
-          {
-            id: "r1",
-            text: "Maleta bodega 23kg — Alejandro",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "r2",
-            text: "Maleta bodega 23kg — Valentina",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "r3",
-            text: "Maleta bodega 23kg — Gustavo",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "r4",
-            text: "Mochila de cabina (55x35x25cm)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "r5",
-            text: "Abrigo de invierno europeo (hasta -5°C)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "r6",
-            text: "🚨 Botas para -30°C — Laponia (Rovaniemi)",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "r7",
-            text: "🚨 Guantes dobles + pasamontañas polar",
-            done: false,
-            urgent: true,
-          },
-          {
-            id: "r8",
-            text: "Ropa interior térmica (lana/sintética)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "r9",
-            text: "Ropa formal para Navidad (Madrid) y Año Nuevo (Ámsterdam)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "r10",
-            text: "Adaptador corriente europeo Tipo C/F",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "r11",
-            text: "Zapatos cómodos para caminar (12-15km/día)",
-            done: false,
-            urgent: false,
-          },
-        ],
-        "💳 Dinero y Finanzas": [
-          {
-            id: "f1",
-            text: "Tarjeta sin comisión internacional (Nubank recomendado)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "f2",
-            text: "Avisar al banco: viaje del 15 dic al 20 ene",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "f3",
-            text: "Cambiar €200-300 efectivo por persona en Colombia",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "f4",
-            text: "App del banco instalada y clave activa",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "f5",
-            text: "Seguro de equipaje / cancelación",
-            done: false,
-            urgent: false,
-          },
-        ],
-        "📱 Tecnología y Apps": [
-          {
-            id: "tech1",
-            text: "Google Maps offline: Madrid, Roma, Barcelona, París, Bruselas, Ámsterdam, Estocolmo, Tallin, Helsinki, Rovaniemi, Praga",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "tech2",
-            text: "Trainline app (trenes Europa)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "tech3",
-            text: "My Aurora Forecast app (Rovaniemi)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "tech4",
-            text: "Traductor offline descargado",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "tech5",
-            text: "Power bank / cargador portátil",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "tech6",
-            text: "Plan roaming o SIM europea",
-            done: false,
-            urgent: false,
-          },
-        ],
-        "🏥 Salud": [
-          { id: "h1", text: "Vacunas al día", done: false, urgent: false },
-          {
-            id: "h2",
-            text: "Analgésicos, antigripales, antidiarreicos",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "h3",
-            text: "Crema hidratante + protector labial (invierno)",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "h4",
-            text: "Medicamentos con receta si aplica",
-            done: false,
-            urgent: false,
-          },
-          {
-            id: "h5",
-            text: "Número del seguro médico guardado en el celular",
-            done: false,
-            urgent: false,
-          },
-        ],
-      };
+const INIT_CHECKLIST={
+  '📄 Documentos y Trámites':[
+    {id:'d1',text:'Visa Schengen — Alejandro (Embajada Italia, Bogotá)',done:false,urgent:true},
+    {id:'d2',text:'Visa Schengen — Valentina',done:false,urgent:true},
+    {id:'d3',text:'Visa Schengen — Gustavo (suegro)',done:false,urgent:true},
+    {id:'d4',text:'Pasaporte vigente +6 meses — Alejandro',done:false,urgent:false},
+    {id:'d5',text:'Pasaporte vigente +6 meses — Valentina',done:false,urgent:false},
+    {id:'d6',text:'Pasaporte vigente +6 meses — Gustavo',done:false,urgent:false},
+    {id:'d7',text:'Seguro médico internacional (mín. €30.000 cobertura)',done:false,urgent:true},
+    {id:'d8',text:'Escaneos digitales en Google Drive / iCloud',done:false,urgent:false},
+    {id:'d9',text:'Carta de trabajo + extractos bancarios 3 meses',done:false,urgent:false},
+  ],
+  '✈️ Vuelos y Transportes':[
+    {id:'t1',text:'✅ Vuelo BOG→MAD→MXP (Despegar #183490346900 · SXYPIM)',done:true,urgent:false},
+    {id:'t2',text:'✅ Vuelo LIN→AMS→MEX→BOG (AM3EDU · incluido)',done:true,urgent:false},
+    {id:'t3',text:'Frecciarossa Milán→Roma (trenitalia.com)',done:false,urgent:false},
+    {id:'t4',text:'Vuelo Roma→Barcelona (Vueling/Ryanair)',done:false,urgent:false},
+    {id:'t5',text:'AVE Barcelona→Madrid (renfe.com)',done:false,urgent:false},
+    {id:'t6',text:'Vuelo Madrid→París (Iberia/Vueling)',done:false,urgent:false},
+    {id:'t7',text:'Thalys París→Bruselas (thalys.com)',done:false,urgent:false},
+    {id:'t8',text:'Thalys Bruselas→Ámsterdam (thalys.com)',done:false,urgent:false},
+    {id:'t9',text:'Vuelo Ámsterdam→Estocolmo (KLM/SAS)',done:false,urgent:false},
+    {id:'t10',text:'🚨 Ferry Estocolmo→Tallin (Tallink Silja · tallinksilja.com)',done:false,urgent:true},
+    {id:'t11',text:'Ferry Tallin→Helsinki (Eckero Line · eckeroline.fi)',done:false,urgent:false},
+    {id:'t12',text:'🚨 Vuelo Helsinki→Rovaniemi (Finnair · finnair.com)',done:false,urgent:true},
+    {id:'t13',text:'Vuelo Rovaniemi→Estocolmo (Finnair)',done:false,urgent:false},
+    {id:'t14',text:'Vuelo Estocolmo→Praga (SAS/Wizz)',done:false,urgent:false},
+    {id:'t15',text:'Vuelo Praga→Milán (easyJet/Ryanair)',done:false,urgent:false},
+    {id:'t16',text:'Bus ATM 73 Piazza San Babila→Linate (2 EUR · 25 min)',done:false,urgent:false},
+    {id:'t17',text:'Tren excursión Bruselas↔Brujas (belgiantrain.be)',done:false,urgent:false},
+  ],
+  '🏨 Alojamiento':[
+    {id:'a1',text:'Airbnb Madrid La Latina (1 noche · 16 dic)',done:false,urgent:false},
+    {id:'a2',text:'Hotel Milán cerca Centrale (1 noche · 17 dic)',done:false,urgent:false},
+    {id:'a3',text:'Airbnb Roma Trastevere (2 noches · 18-19 dic)',done:false,urgent:false},
+    {id:'a4',text:'Airbnb Barcelona centro (2 noches · 21-22 dic)',done:false,urgent:false},
+    {id:'a5',text:'🚨 Hotel Madrid NAVIDAD (3 noches · 23-25 dic) — RESERVAR YA',done:false,urgent:true},
+    {id:'a6',text:'Airbnb París Le Marais (2 noches · 26-27 dic)',done:false,urgent:false},
+    {id:'a7',text:'Hotel Bruselas Grand Place (3 noches · 28-30 dic)',done:false,urgent:false},
+    {id:'a8',text:'🚨 Hotel Ámsterdam NYE (2 noches · 30-31 dic) — RESERVAR YA',done:false,urgent:true},
+    {id:'a9',text:'✅ Estocolmo (6 noches total: 2-5 ene + 13-14 ene) — Casa amigos GRATIS',done:true,urgent:false},
+    {id:'a10',text:'Hotel Tallin ciudad vieja (2 noches · 6-7 ene)',done:false,urgent:false},
+    {id:'a11',text:'Airbnb Helsinki (2 noches · 8-9 ene)',done:false,urgent:false},
+    {id:'a12',text:'🚨 Hotel Rovaniemi o Glass Igloo (3 noches · 10-12 ene)',done:false,urgent:true},
+    {id:'a13',text:'Hotel Praga centro (3 noches · 15-17 ene)',done:false,urgent:false},
+    {id:'a14',text:'Hotel cerca Linate Milán (1 noche · 18 ene)',done:false,urgent:false},
+  ],
+  '🎟️ Actividades — Reservar anticipado':[
+    {id:'act1',text:'🚨 Museos Vaticanos + Capilla Sixtina (museivaticani.va)',done:false,urgent:true},
+    {id:'act2',text:'🚨 Coliseo + Foro Romano (parcocolosseo.it)',done:false,urgent:true},
+    {id:'act3',text:'🚨 Sagrada Familia Barcelona (sagradafamilia.org)',done:false,urgent:true},
+    {id:'act4',text:'🚨 Tour Aurora Boreal Rovaniemi (safaris.fi)',done:false,urgent:true},
+    {id:'act5',text:'🚨 Husky Safari (bearhillhusky.com)',done:false,urgent:true},
+    {id:'act6',text:'🚨 Trineo de renos (santasafaris.fi)',done:false,urgent:true},
+    {id:'act7',text:'Museo Anne Frank Ámsterdam (annefrank.org)',done:false,urgent:true},
+    {id:'act8',text:'Rijksmuseum o Van Gogh Ámsterdam — elegir uno',done:false,urgent:false},
+    {id:'act9',text:'Park Güell Barcelona (parkguell.barcelona)',done:false,urgent:false},
+    {id:'act10',text:'Panteón Roma (pantheonroma.com)',done:false,urgent:false},
+    {id:'act11',text:'Cena de Navidad Madrid 24 dic — RESERVAR con anticipación',done:false,urgent:true},
+    {id:'act12',text:'Restaurante NYE Ámsterdam 31 dic — RESERVAR URGENTE',done:false,urgent:true},
+  ],
+  '🧳 Ropa y Equipaje':[
+    {id:'r1',text:'Maleta bodega 23kg — Alejandro',done:false,urgent:false},
+    {id:'r2',text:'Maleta bodega 23kg — Valentina',done:false,urgent:false},
+    {id:'r3',text:'Maleta bodega 23kg — Gustavo',done:false,urgent:false},
+    {id:'r4',text:'Mochila de cabina (55x35x25cm)',done:false,urgent:false},
+    {id:'r5',text:'Abrigo de invierno europeo (hasta -5°C)',done:false,urgent:false},
+    {id:'r6',text:'🚨 Botas para -30°C — Laponia (Rovaniemi)',done:false,urgent:true},
+    {id:'r7',text:'🚨 Guantes dobles + pasamontañas polar',done:false,urgent:true},
+    {id:'r8',text:'Ropa interior térmica (lana/sintética)',done:false,urgent:false},
+    {id:'r9',text:'Ropa formal para Navidad (Madrid) y Año Nuevo (Ámsterdam)',done:false,urgent:false},
+    {id:'r10',text:'Adaptador corriente europeo Tipo C/F',done:false,urgent:false},
+    {id:'r11',text:'Zapatos cómodos para caminar (12-15km/día)',done:false,urgent:false},
+  ],
+  '💳 Dinero y Finanzas':[
+    {id:'f1',text:'Tarjeta sin comisión internacional (Nubank recomendado)',done:false,urgent:false},
+    {id:'f2',text:'Avisar al banco: viaje del 15 dic al 20 ene',done:false,urgent:false},
+    {id:'f3',text:'Cambiar €200-300 efectivo por persona en Colombia',done:false,urgent:false},
+    {id:'f4',text:'App del banco instalada y clave activa',done:false,urgent:false},
+    {id:'f5',text:'Seguro de equipaje / cancelación',done:false,urgent:false},
+  ],
+  '📱 Tecnología y Apps':[
+    {id:'tech1',text:'Google Maps offline: Madrid, Roma, Barcelona, París, Bruselas, Ámsterdam, Estocolmo, Tallin, Helsinki, Rovaniemi, Praga',done:false,urgent:false},
+    {id:'tech2',text:'Trainline app (trenes Europa)',done:false,urgent:false},
+    {id:'tech3',text:'My Aurora Forecast app (Rovaniemi)',done:false,urgent:false},
+    {id:'tech4',text:'Traductor offline descargado',done:false,urgent:false},
+    {id:'tech5',text:'Power bank / cargador portátil',done:false,urgent:false},
+    {id:'tech6',text:'Plan roaming o SIM europea',done:false,urgent:false},
+  ],
+  '🏥 Salud':[
+    {id:'h1',text:'Vacunas al día',done:false,urgent:false},
+    {id:'h2',text:'Analgésicos, antigripales, antidiarreicos',done:false,urgent:false},
+    {id:'h3',text:'Crema hidratante + protector labial (invierno)',done:false,urgent:false},
+    {id:'h4',text:'Medicamentos con receta si aplica',done:false,urgent:false},
+    {id:'h5',text:'Número del seguro médico guardado en el celular',done:false,urgent:false},
+  ],
+};
 
-      const INIT_DOCS = [
-        {
-          id: "dc1",
-          category: "Vuelos",
-          title: "Reserva Despegar",
-          info: "#183490346900",
-          type: "info",
-          icon: "✈️",
-        },
-        {
-          id: "dc2",
-          category: "Vuelos",
-          title: "Check-in IDA — Código",
-          info: "SXYPIM",
-          type: "info",
-          icon: "✈️",
-        },
-        {
-          id: "dc3",
-          category: "Vuelos",
-          title: "Check-in VUELTA — Código ITA",
-          info: "AM3EDU",
-          type: "info",
-          icon: "✈️",
-        },
-        {
-          id: "dc4",
-          category: "Vuelos",
-          title: "IDA: BOG→MEX→MAD→MXP",
-          info: "Mar 15 dic · AM762 16:00 · AM21 22:05 · AM6849 (Air Europa) 15:10 → MXP 17:20 Jue 17 dic",
-          type: "info",
-          icon: "✈️",
-        },
-        {
-          id: "dc5",
-          category: "Vuelos",
-          title: "VUELTA: LIN→AMS→MEX→BOG",
-          info: "Mar 19 ene · AZ112 17:20 → AMS 19:15 · AM26 22:00 → MEX 03:20 · AM761 08:45 → BOG 14:45",
-          type: "info",
-          icon: "✈️",
-        },
-        {
-          id: "dc6",
-          category: "Vuelos",
-          title: "⚠️ CRÍTICO: Vuelo sale de LINATE (LIN)",
-          info: "NO es Malpensa (MXP). Son aeropuertos distintos. Bus ATM 73 desde Piazza San Babila: 2 EUR · 25 min.",
-          type: "info",
-          icon: "🚨",
-        },
-        {
-          id: "dc7",
-          category: "Emergencias",
-          title: "Emergencias Europa",
-          info: "112 (toda Europa)",
-          type: "info",
-          icon: "🚨",
-        },
-        {
-          id: "dc8",
-          category: "Emergencias",
-          title: "España — Policía",
-          info: "091 · Emergencias: 112 · Bomberos: 080",
-          type: "info",
-          icon: "🚨",
-        },
-        {
-          id: "dc9",
-          category: "Emergencias",
-          title: "Italia — Policía",
-          info: "113 · Emergencias: 112",
-          type: "info",
-          icon: "🚨",
-        },
-        {
-          id: "dc10",
-          category: "Emergencias",
-          title: "Francia — Policía",
-          info: "17 · SAMU: 15 · Emergencias: 112",
-          type: "info",
-          icon: "🚨",
-        },
-        {
-          id: "dc11",
-          category: "Emergencias",
-          title: "Finlandia — Emergencias",
-          info: "112",
-          type: "info",
-          icon: "🚨",
-        },
-        {
-          id: "dc12",
-          category: "Embajadas",
-          title: "Embajada Colombia — España",
-          info: "+34 91 431 43 00",
-          type: "info",
-          icon: "🏛️",
-        },
-        {
-          id: "dc13",
-          category: "Embajadas",
-          title: "Embajada Colombia — Italia",
-          info: "+39 06 362 43 573",
-          type: "info",
-          icon: "🏛️",
-        },
-        {
-          id: "dc14",
-          category: "Seguros",
-          title: "Seguro médico viaje",
-          info: "Pendiente — completar al contratar",
-          type: "info",
-          icon: "🏥",
-        },
-        {
-          id: "dc15",
-          category: "Supermercados",
-          title: "Supermercados por país",
-          info: "España: Mercadona/Lidl · Italia: Esselunga/Coop · Francia: Monoprix/Lidl · Bélgica: Colruyt/Lidl · Holanda: Albert Heijn · Suecia: ICA/Willys · Estonia: Selver · Finlandia: K-market · Chequia: Albert/Lidl",
-          type: "info",
-          icon: "🛒",
-        },
-        {
-          id: "dc16",
-          category: "Consejos",
-          title: "Errores que cuestan caro",
-          info: "1) Hotel Amsterdam NYE sin reserva → precio x3 o no hay. 2) Vaticano/Coliseo sin reserva → 3-5h fila. 3) Sagrada Familia sin reserva → 2-3h fila. 4) Laponia sin ropa polar → peligroso. 5) Ryanair: verificar aeropuerto. 6) No avisar al banco → bloqueo tarjeta. 7) Confundir MXP con LIN.",
-          type: "info",
-          icon: "⚠️",
-        },
-      ];
+const INIT_DOCS=[
+  {id:'dc1',category:'Vuelos',title:'Reserva Despegar',info:'#183490346900',type:'info',icon:'✈️'},
+  {id:'dc2',category:'Vuelos',title:'Check-in IDA — Código',info:'SXYPIM',type:'info',icon:'✈️'},
+  {id:'dc3',category:'Vuelos',title:'Check-in VUELTA — Código ITA',info:'AM3EDU',type:'info',icon:'✈️'},
+  {id:'dc4',category:'Vuelos',title:'IDA: BOG→MEX→MAD→MXP',info:'Mar 15 dic · AM762 16:00 · AM21 22:05 · AM6849 (Air Europa) 15:10 → MXP 17:20 Jue 17 dic',type:'info',icon:'✈️'},
+  {id:'dc5',category:'Vuelos',title:'VUELTA: LIN→AMS→MEX→BOG',info:'Mar 19 ene · AZ112 17:20 → AMS 19:15 · AM26 22:00 → MEX 03:20 · AM761 08:45 → BOG 14:45',type:'info',icon:'✈️'},
+  {id:'dc6',category:'Vuelos',title:'⚠️ CRÍTICO: Vuelo sale de LINATE (LIN)',info:'NO es Malpensa (MXP). Son aeropuertos distintos. Bus ATM 73 desde Piazza San Babila: 2 EUR · 25 min.',type:'info',icon:'🚨'},
+  {id:'dc7',category:'Emergencias',title:'Emergencias Europa',info:'112 (toda Europa)',type:'info',icon:'🚨'},
+  {id:'dc8',category:'Emergencias',title:'España — Policía',info:'091 · Emergencias: 112 · Bomberos: 080',type:'info',icon:'🚨'},
+  {id:'dc9',category:'Emergencias',title:'Italia — Policía',info:'113 · Emergencias: 112',type:'info',icon:'🚨'},
+  {id:'dc10',category:'Emergencias',title:'Francia — Policía',info:'17 · SAMU: 15 · Emergencias: 112',type:'info',icon:'🚨'},
+  {id:'dc11',category:'Emergencias',title:'Finlandia — Emergencias',info:'112',type:'info',icon:'🚨'},
+  {id:'dc12',category:'Embajadas',title:'Embajada Colombia — España',info:'+34 91 431 43 00',type:'info',icon:'🏛️'},
+  {id:'dc13',category:'Embajadas',title:'Embajada Colombia — Italia',info:'+39 06 362 43 573',type:'info',icon:'🏛️'},
+  {id:'dc14',category:'Seguros',title:'Seguro médico viaje',info:'Pendiente — completar al contratar',type:'info',icon:'🏥'},
+  {id:'dc15',category:'Supermercados',title:'Supermercados por país',info:'España: Mercadona/Lidl · Italia: Esselunga/Coop · Francia: Monoprix/Lidl · Bélgica: Colruyt/Lidl · Holanda: Albert Heijn · Suecia: ICA/Willys · Estonia: Selver · Finlandia: K-market · Chequia: Albert/Lidl',type:'info',icon:'🛒'},
+  {id:'dc16',category:'Consejos',title:'Errores que cuestan caro',info:'1) Hotel Amsterdam NYE sin reserva → precio x3 o no hay. 2) Vaticano/Coliseo sin reserva → 3-5h fila. 3) Sagrada Familia sin reserva → 2-3h fila. 4) Laponia sin ropa polar → peligroso. 5) Ryanair: verificar aeropuerto. 6) No avisar al banco → bloqueo tarjeta. 7) Confundir MXP con LIN.',type:'info',icon:'⚠️'},
+];
 
-      const CAT_COLORS = {
-        Alojamiento: "#8B5CF6",
-        Transporte: "#3B82F6",
-        Comida: "#F59E0B",
-        "Entradas/Actividades": "#10B981",
-        Compras: "#EC4899",
-        Imprevistos: "#EF4444",
-        Otro: "#64748B",
-      };
-      const CAT_ICONS = {
-        Alojamiento: "🏨",
-        Transporte: "🚆",
-        Comida: "🍽️",
-        "Entradas/Actividades": "🎟️",
-        Compras: "🛍️",
-        Imprevistos: "⚠️",
-        Otro: "📌",
-      };
+const CAT_COLORS={Alojamiento:'#8B5CF6',Transporte:'#3B82F6',Comida:'#F59E0B','Entradas/Actividades':'#10B981',Compras:'#EC4899',Imprevistos:'#EF4444',Otro:'#64748B'};
+const CAT_ICONS={Alojamiento:'🏨',Transporte:'🚆',Comida:'🍽️','Entradas/Actividades':'🎟️',Compras:'🛍️',Imprevistos:'⚠️',Otro:'📌'};
 
-      // ══════════════════ STORAGE ══════════════════
-      const LS = {
-        get: (k, d) => {
-          try {
-            const v = localStorage.getItem(k);
-            return v ? JSON.parse(v) : d;
-          } catch {
-            return d;
-          }
-        },
-        set: (k, v) => {
-          try {
-            localStorage.setItem(k, JSON.stringify(v));
-          } catch {}
-        },
-      };
-      const DB = "europaFinal";
-      function openDB() {
-        return new Promise((r, j) => {
-          const q = indexedDB.open(DB, 1);
-          q.onerror = () => j(q.error);
-          q.onsuccess = () => r(q.result);
-          q.onupgradeneeded = (e) => {
-            if (!e.target.result.objectStoreNames.contains("files"))
-              e.target.result.createObjectStore("files", { keyPath: "id" });
-          };
-        });
-      }
-      async function dbSave(o) {
-        const db = await openDB();
-        return new Promise((r, j) => {
-          const t = db.transaction("files", "readwrite");
-          t.objectStore("files").put(o);
-          t.oncomplete = r;
-          t.onerror = () => j(t.error);
-        });
-      }
-      async function dbGet(id) {
-        const db = await openDB();
-        return new Promise((r, j) => {
-          const t = db.transaction("files", "readonly");
-          const q = t.objectStore("files").get(id);
-          q.onsuccess = () => r(q.result);
-          q.onerror = () => j(q.error);
-        });
-      }
-      async function dbDel(id) {
-        const db = await openDB();
-        return new Promise((r, j) => {
-          const t = db.transaction("files", "readwrite");
-          t.objectStore("files").delete(id);
-          t.oncomplete = r;
-          t.onerror = () => j(t.error);
-        });
-      }
+// ══════════════════ STORAGE ══════════════════
+const LS={
+  get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+};
+const DB='europaFinal';
+function openDB(){return new Promise((r,j)=>{const q=indexedDB.open(DB,1);q.onerror=()=>j(q.error);q.onsuccess=()=>r(q.result);q.onupgradeneeded=e=>{if(!e.target.result.objectStoreNames.contains('files'))e.target.result.createObjectStore('files',{keyPath:'id'})}})}
+async function dbSave(o){const db=await openDB();return new Promise((r,j)=>{const t=db.transaction('files','readwrite');t.objectStore('files').put(o);t.oncomplete=r;t.onerror=()=>j(t.error)})}
+async function dbGet(id){const db=await openDB();return new Promise((r,j)=>{const t=db.transaction('files','readonly');const q=t.objectStore('files').get(id);q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error)})}
+async function dbDel(id){const db=await openDB();return new Promise((r,j)=>{const t=db.transaction('files','readwrite');t.objectStore('files').delete(id);t.oncomplete=r;t.onerror=()=>j(t.error)})}
 
-      // ══════════════════ HELPERS ══════════════════
-      const fmt = (n, cur, rate) => {
-        if (!n && n !== 0) return "—";
-        const v = parseFloat(n) || 0;
-        return cur === "EUR"
-          ? `€${v.toLocaleString("es", { maximumFractionDigits: 0 })}`
-          : `$${(v * rate).toLocaleString("es", { maximumFractionDigits: 0 })}`;
-      };
-      const daysUntil = (d) => Math.ceil((new Date(d) - new Date()) / 864e5);
-      const budgetTotal = (b) =>
-        (b.accom || 0) +
-        (b.transport || 0) +
-        (b.food || 0) +
-        (b.activities || 0) +
-        (b.misc || 0);
+// ══════════════════ HELPERS ══════════════════
+const fmt=(n,cur,rate,rateUSD)=>{if(!n&&n!==0)return'—';const v=parseFloat(n)||0;if(cur==='EUR')return`€${v.toLocaleString('es',{maximumFractionDigits:0})}`;if(cur==='USD')return`US$${(v*(rateUSD||1.08)).toLocaleString('es',{maximumFractionDigits:0})}`;return`$${(v*rate).toLocaleString('es',{maximumFractionDigits:0})}`};
+const daysUntil=d=>Math.ceil((new Date(d)-new Date())/(864e5));
+const budgetTotal=b=>(b.accom||0)+(b.transport||0)+(b.food||0)+(b.activities||0)+(b.misc||0);
 
-      // ══════════════════ APP ══════════════════
-      function App() {
-        const [tab, setTab] = useState("home");
-        const [itin, setItin] = useState(() =>
-          LS.get("itin_f1", INIT_ITINERARY),
-        );
-        const [exp, setExp] = useState(() => LS.get("exp_f1", []));
-        const [bud, setBud] = useState(() => LS.get("bud_f1", INIT_BUDGETS));
-        const [chk, setChk] = useState(() => LS.get("chk_f1", INIT_CHECKLIST));
-        const [docs, setDocs] = useState(() => LS.get("doc_f1", INIT_DOCS));
-        const [rate, setRate] = useState(() => LS.get("rate_f1", 5000));
-        const [cur, setCur] = useState("EUR");
-        const [rl, setRl] = useState(false);
+// ══════════════════ APP ══════════════════
+function App(){
+  const[tab,setTab]=useState('home');
+  const[itin,setItin]=useState(()=>LS.get('itin_f1',INIT_ITINERARY));
+  const[exp,setExp]=useState(()=>LS.get('exp_f1',[]));
+  const[bud,setBud]=useState(()=>LS.get('bud_f1',INIT_BUDGETS));
+  const[chk,setChk]=useState(()=>LS.get('chk_f1',INIT_CHECKLIST));
+  const[docs,setDocs]=useState(()=>LS.get('doc_f1',INIT_DOCS));
+  const[rate,setRate]=useState(()=>LS.get('rate_f1',5000));
+  const[rateUSD,setRateUSD]=useState(()=>LS.get('rateUSD_f1',1.08));
+  const[cur,setCur]=useState('EUR');
+  const[rl,setRl]=useState(false);
+  const[rlUSD,setRlUSD]=useState(false);
 
-        useEffect(() => LS.set("itin_f1", itin), [itin]);
-        useEffect(() => LS.set("exp_f1", exp), [exp]);
-        useEffect(() => LS.set("bud_f1", bud), [bud]);
-        useEffect(() => LS.set("chk_f1", chk), [chk]);
-        useEffect(() => LS.set("doc_f1", docs), [docs]);
-        useEffect(() => LS.set("rate_f1", rate), [rate]);
+  useEffect(()=>LS.set('itin_f1',itin),[itin]);
+  useEffect(()=>LS.set('exp_f1',exp),[exp]);
+  useEffect(()=>LS.set('bud_f1',bud),[bud]);
+  useEffect(()=>LS.set('chk_f1',chk),[chk]);
+  useEffect(()=>LS.set('doc_f1',docs),[docs]);
+  useEffect(()=>LS.set('rate_f1',rate),[rate]);
+  useEffect(()=>LS.set('rateUSD_f1',rateUSD),[rateUSD]);
 
-        const fetchRate = useCallback(async () => {
-          setRl(true);
-          try {
-            const r = await fetch(
-              "https://api.frankfurter.app/latest?from=EUR&to=COP",
-            );
-            const j = await r.json();
-            if (j.rates?.COP) {
-              setRate(Math.round(j.rates.COP));
-              alert(
-                `✅ 1 EUR = $${Math.round(j.rates.COP).toLocaleString("es")} COP`,
-              );
-            }
-          } catch {
-            alert("Sin conexión. Intenta de nuevo.");
-          } finally {
-            setRl(false);
-          }
-        }, []);
+  const fetchRate=useCallback(async()=>{
+    setRl(true);
+    try{const r=await fetch('https://api.frankfurter.app/latest?from=EUR&to=COP');const j=await r.json();if(j.rates?.COP){setRate(Math.round(j.rates.COP));alert(`✅ 1 EUR = $${Math.round(j.rates.COP).toLocaleString('es')} COP`)}}
+    catch{alert('Sin conexión. Intenta de nuevo.')}finally{setRl(false)};
+  },[]);
 
-        const totalExp = useMemo(
-          () =>
-            exp.reduce((s, e) => {
-              const v = parseFloat(e.amount) || 0;
-              return s + (e.currency === "EUR" ? v : v / rate);
-            }, 0),
-          [exp, rate],
-        );
-        const totalBud = useMemo(
-          () => Object.values(bud).reduce((s, b) => s + budgetTotal(b), 0),
-          [bud],
-        );
-        const urgentN = useMemo(() => {
-          let n = 0;
-          Object.values(chk).forEach((c) =>
-            c.forEach((i) => {
-              if (i.urgent && !i.done) n++;
-            }),
-          );
-          return n;
-        }, [chk]);
+  const fetchRateUSD=useCallback(async()=>{
+    setRlUSD(true);
+    try{const r=await fetch('https://api.frankfurter.app/latest?from=EUR&to=USD');const j=await r.json();if(j.rates?.USD){setRateUSD(parseFloat(j.rates.USD.toFixed(4)));alert(`✅ 1 EUR = $${j.rates.USD.toFixed(4)} USD`)}}
+    catch{alert('Sin conexión. Intenta de nuevo.')}finally{setRlUSD(false)};
+  },[]);
 
-        const TABS = [
-          {
-            id: "home",
-            lb: "Inicio",
-            ic: html`<svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-            </svg>`,
-          },
-          {
-            id: "itin",
-            lb: "Ruta",
-            ic: html`<svg viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
-              />
-            </svg>`,
-          },
-          {
-            id: "exp",
-            lb: "Gastos",
-            ic: html`<svg viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"
-              />
-            </svg>`,
-          },
-          {
-            id: "bud",
-            lb: "Presup.",
-            ic: html`<svg viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"
-              />
-            </svg>`,
-          },
-          {
-            id: "chk",
-            lb: "Checklist",
-            ic: html`<svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-            </svg>`,
-          },
-          {
-            id: "docs",
-            lb: "Docs",
-            ic: html`<svg viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
-              />
-            </svg>`,
-          },
-        ];
+  const resetApp=useCallback(()=>{
+    if(!confirm('⚠️ ¿Estás seguro? Esto borrará TODOS los datos: gastos, presupuesto, checklist, documentos e itinerario. Esta acción no se puede deshacer.'))return;
+    if(!confirm('🚨 Segunda confirmación: ¿Borrar todo y empezar de cero?'))return;
+    setItin(INIT_ITINERARY);
+    setExp([]);
+    setBud(INIT_BUDGETS);
+    setChk(INIT_CHECKLIST);
+    setDocs(INIT_DOCS);
+    setRate(5000);
+    setRateUSD(1.08);
+    ['itin_f1','exp_f1','bud_f1','chk_f1','doc_f1','rate_f1','rateUSD_f1'].forEach(k=>localStorage.removeItem(k));
+    // Limpiar archivos de IndexedDB
+    openDB().then(db=>{const t=db.transaction('files','readwrite');t.objectStore('files').clear()}).catch(()=>{});
+    alert('✅ App reseteada. Empezá tu nuevo viaje.');
+  },[]);
 
-        return html`<div style="height:100%;display:flex;flex-direction:column">
-          <div class="screen">
-            ${tab === "home" &&
-            html`<${HomeTab}
-              itin=${itin}
-              totalExp=${totalExp}
-              totalBud=${totalBud}
-              urgentN=${urgentN}
-              cur=${cur}
-              setCur=${setCur}
-              rate=${rate}
-              setRate=${setRate}
-              fetchRate=${fetchRate}
-              rl=${rl}
-            />`}
-            ${tab === "itin" &&
-            html`<${ItinTab}
-              itin=${itin}
-              setItin=${setItin}
-              cur=${cur}
-              rate=${rate}
-            />`}
-            ${tab === "exp" &&
-            html`<${ExpTab}
-              exp=${exp}
-              setExp=${setExp}
-              itin=${itin}
-              cur=${cur}
-              rate=${rate}
-            />`}
-            ${tab === "bud" &&
-            html`<${BudTab}
-              bud=${bud}
-              setBud=${setBud}
-              exp=${exp}
-              itin=${itin}
-              cur=${cur}
-              rate=${rate}
-            />`}
-            ${tab === "chk" && html`<${ChkTab} chk=${chk} setChk=${setChk} />`}
-            ${tab === "docs" &&
-            html`<${DocsTab} docs=${docs} setDocs=${setDocs} />`}
+  const totalExp=useMemo(()=>exp.reduce((s,e)=>{const v=parseFloat(e.amount)||0;return s+(e.currency==='EUR'?v:v/rate)},0),[exp,rate]);
+  const totalBud=useMemo(()=>Object.values(bud).reduce((s,b)=>s+budgetTotal(b),0),[bud]);
+  const urgentN=useMemo(()=>{let n=0;Object.values(chk).forEach(c=>c.forEach(i=>{if(i.urgent&&!i.done)n++}));return n;},[chk]);
+
+  const TABS=[
+    {id:'home',lb:'Inicio',ic:html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>`},
+    {id:'itin',lb:'Ruta',ic:html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`},
+    {id:'exp', lb:'Gastos',ic:html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>`},
+    {id:'bud', lb:'Presup.',ic:html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>`},
+    {id:'chk', lb:'Checklist',ic:html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`},
+    {id:'docs',lb:'Docs',ic:html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>`},
+  ];
+
+  return html`<div style="height:100%;display:flex;flex-direction:column">
+    <div class="screen">
+      ${tab==='home'&&html`<${HomeTab} itin=${itin} totalExp=${totalExp} totalBud=${totalBud} urgentN=${urgentN} cur=${cur} setCur=${setCur} rate=${rate} setRate=${setRate} fetchRate=${fetchRate} rl=${rl} rateUSD=${rateUSD} setRateUSD=${setRateUSD} fetchRateUSD=${fetchRateUSD} rlUSD=${rlUSD} resetApp=${resetApp}/>`}
+      ${tab==='itin'&&html`<${ItinTab} itin=${itin} setItin=${setItin} cur=${cur} rate=${rate} rateUSD=${rateUSD}/>`}
+      ${tab==='exp'&&html`<${ExpTab} exp=${exp} setExp=${setExp} itin=${itin} cur=${cur} rate=${rate} rateUSD=${rateUSD}/>`}
+      ${tab==='bud'&&html`<${BudTab} bud=${bud} setBud=${setBud} exp=${exp} itin=${itin} cur=${cur} rate=${rate} rateUSD=${rateUSD}/>`}
+      ${tab==='chk'&&html`<${ChkTab} chk=${chk} setChk=${setChk}/>`}
+      ${tab==='docs'&&html`<${DocsTab} docs=${docs} setDocs=${setDocs}/>`}
+    </div>
+    <nav class="nav">
+      ${TABS.map(t=>html`<button class=${'nav-btn'+(tab===t.id?' active':'')} onClick=${()=>setTab(t.id)}>${t.ic}<span class="nav-label">${t.lb}</span></button>`)}
+    </nav>
+  </div>`;
+}
+
+// ══════════════════ HOME ══════════════════
+function HomeTab({itin,totalExp,totalBud,urgentN,cur,setCur,rate,fetchRate,rl,setRate,rateUSD,setRateUSD,fetchRateUSD,rlUSD,resetApp}){
+  const days=daysUntil('2026-12-15');
+  const pct=totalBud>0?Math.min(100,(totalExp/totalBud)*100):0;
+  const[editRate,setEditRate]=useState(false);
+  const[rateInput,setRateInput]=useState(String(rate));
+  const saveRate=()=>{const v=parseInt(rateInput.replace(/\D/g,''));if(v>0){setRate(v);setEditRate(false)}};
+  const[editRateUSD,setEditRateUSD]=useState(false);
+  const[rateUSDInput,setRateUSDInput]=useState(String(rateUSD));
+  const saveRateUSD=()=>{const v=parseFloat(rateUSDInput);if(v>0){setRateUSD(parseFloat(v.toFixed(4)));setEditRateUSD(false)}};
+  return html`<div>
+    <div class="page-header" style="padding-top:8px">
+      <div><div style="font-size:13px;color:var(--text3)">Europa 2026-27 🌍</div><div class="page-title">¡Hola, Alejandro!</div></div>
+      <div class="cur-toggle">
+        <button class=${'cur-btn'+(cur==='EUR'?' active':'')} onClick=${()=>setCur('EUR')}>EUR</button>
+        <button class=${'cur-btn'+(cur==='USD'?' active':'')} onClick=${()=>setCur('USD')}>USD</button>
+        <button class=${'cur-btn'+(cur==='COP'?' active':'')} onClick=${()=>setCur('COP')}>COP</button>
+      </div>
+    </div>
+
+    <div class="countdown">
+      <div class="cd-days">${days>0?days:0}</div>
+      <div class="cd-label">${days>0?'días para el viaje 🛫':'¡Ya estás viajando!'}</div>
+      <div class="cd-date">Salida: Martes 15 dic 2026 · BOG 16:00 → MAD 15 dic noche</div>
+    </div>
+
+    ${urgentN>0&&html`<div class="alert alert-red"><span style="font-size:20px">🚨</span><div><div style="font-size:13px;font-weight:700;color:var(--red)">${urgentN} pendientes URGENTES</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Revisá la pestaña Checklist</div></div></div>`}
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-val" style="color:var(--amber)">${fmt(totalExp,cur,rate,rateUSD)}</div><div class="stat-lbl">Gastado</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--blue)">${fmt(totalBud,cur,rate,rateUSD)}</div><div class="stat-lbl">Presupuesto</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:${pct>80?'var(--red)':'var(--green)'}">${pct.toFixed(0)}%</div><div class="stat-lbl">Utilizado</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--green)">${fmt(totalBud-totalExp,cur,rate,rateUSD)}</div><div class="stat-lbl">Disponible</div></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:14px;font-weight:700">Progreso del presupuesto</span>
+        <span class=${'badge '+(pct<60?'badge-green':pct<85?'badge-amber':'badge-red')}>${pct.toFixed(0)}%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style=${'width:'+pct+'%;background:'+(pct<60?'var(--green)':pct<85?'var(--amber)':'var(--red)')}></div></div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:14px;font-weight:700;margin-bottom:10px">💱 Tasa EUR → COP</div>
+      ${editRate?html`
+        <div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:8px">Escribí el valor manual de 1 EUR en COP:</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input class="input" type="number" value=${rateInput} onInput=${e=>setRateInput(e.target.value)} placeholder="5000" style="font-size:18px;font-weight:800;flex:1"/>
+            <button class="btn btn-primary btn-sm" onClick=${saveRate}>✓</button>
+            <button class="btn btn-ghost btn-sm" onClick=${()=>setEditRate(false)}>✕</button>
           </div>
-          <nav class="nav">
-            ${TABS.map(
-              (t) =>
-                html`<button
-                  class=${"nav-btn" + (tab === t.id ? " active" : "")}
-                  onClick=${() => setTab(t.id)}
-                >
-                  ${t.ic}<span class="nav-label">${t.lb}</span>
-                </button>`,
-            )}
-          </nav>
-        </div>`;
-      }
-
-      // ══════════════════ HOME ══════════════════
-      function HomeTab({
-        itin,
-        totalExp,
-        totalBud,
-        urgentN,
-        cur,
-        setCur,
-        rate,
-        fetchRate,
-        rl,
-        setRate,
-      }) {
-        const days = daysUntil("2026-12-15");
-        const pct =
-          totalBud > 0 ? Math.min(100, (totalExp / totalBud) * 100) : 0;
-        const [editRate, setEditRate] = useState(false);
-        const [rateInput, setRateInput] = useState(String(rate));
-        const saveRate = () => {
-          const v = parseInt(rateInput.replace(/\D/g, ""));
-          if (v > 0) {
-            setRate(v);
-            setEditRate(false);
-          }
-        };
-        return html`<div>
-          <div class="page-header" style="padding-top:8px">
-            <div>
-              <div style="font-size:13px;color:var(--text3)">
-                Europa 2026-27 🌍
-              </div>
-              <div class="page-title">¡NUESTO VIAJE A EUROPA 2026!</div>
-            </div>
-            <div class="cur-toggle">
-              <button
-                class=${"cur-btn" + (cur === "EUR" ? " active" : "")}
-                onClick=${() => setCur("EUR")}
-              >
-                EUR
-              </button>
-              <button
-                class=${"cur-btn" + (cur === "COP" ? " active" : "")}
-                onClick=${() => setCur("COP")}
-              >
-                COP
-              </button>
-            </div>
+        </div>
+      `:html`
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:22px;font-weight:800;color:var(--blue)">1 EUR = ${rate.toLocaleString('es')} COP</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">Banco Central Europeo</div>
           </div>
-
-          <div class="countdown">
-            <div class="cd-days">${days > 0 ? days : 0}</div>
-            <div class="cd-label">
-              ${days > 0 ? "días para el viaje 🛫" : "¡Ya estás viajando!"}
-            </div>
-            <div class="cd-date">
-              Salida: Martes 15 dic 2026 · BOG 16:00 → MAD 15 dic noche
-            </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+            <button class="btn btn-ghost btn-sm" onClick=${fetchRate} disabled=${rl}>${rl?'⏳':'🔄'} Auto</button>
+            <button class="btn btn-ghost btn-sm" onClick=${()=>{setRateInput(String(rate));setEditRate(true)}}>✏️ Manual</button>
           </div>
+        </div>
+      `}
+    </div>
 
-          ${urgentN > 0 &&
-          html`<div class="alert alert-red">
-            <span style="font-size:20px">🚨</span>
-            <div>
-              <div style="font-size:13px;font-weight:700;color:var(--red)">
-                ${urgentN} pendientes URGENTES
-              </div>
-              <div style="font-size:12px;color:var(--text2);margin-top:2px">
-                Revisá la pestaña Checklist
-              </div>
-            </div>
-          </div>`}
-
-          <div class="stat-row">
-            <div class="stat-card">
-              <div class="stat-val" style="color:var(--amber)">
-                ${fmt(totalExp, cur, rate)}
-              </div>
-              <div class="stat-lbl">Gastado</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-val" style="color:var(--blue)">
-                ${fmt(totalBud, cur, rate)}
-              </div>
-              <div class="stat-lbl">Presupuesto</div>
-            </div>
-            <div class="stat-card">
-              <div
-                class="stat-val"
-                style="color:${pct > 80 ? "var(--red)" : "var(--green)"}"
-              >
-                ${pct.toFixed(0)}%
-              </div>
-              <div class="stat-lbl">Utilizado</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-val" style="color:var(--green)">
-                ${fmt(totalBud - totalExp, cur, rate)}
-              </div>
-              <div class="stat-lbl">Disponible</div>
-            </div>
+    <div class="card">
+      <div style="font-size:14px;font-weight:700;margin-bottom:10px">💵 Tasa EUR → USD</div>
+      ${editRateUSD?html`
+        <div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:8px">Escribí el valor manual de 1 EUR en USD:</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input class="input" type="number" step="0.0001" value=${rateUSDInput} onInput=${e=>setRateUSDInput(e.target.value)} placeholder="1.08" style="font-size:18px;font-weight:800;flex:1"/>
+            <button class="btn btn-primary btn-sm" onClick=${saveRateUSD}>✓</button>
+            <button class="btn btn-ghost btn-sm" onClick=${()=>setEditRateUSD(false)}>✕</button>
           </div>
-
-          <div class="card">
-            <div
-              style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"
-            >
-              <span style="font-size:14px;font-weight:700"
-                >Progreso del presupuesto</span
-              >
-              <span
-                class=${"badge " +
-                (pct < 60
-                  ? "badge-green"
-                  : pct < 85
-                    ? "badge-amber"
-                    : "badge-red")}
-                >${pct.toFixed(0)}%</span
-              >
-            </div>
-            <div class="progress-bar">
-              <div
-                class="progress-fill"
-                style=${"width:" +
-                pct +
-                "%;background:" +
-                (pct < 60
-                  ? "var(--green)"
-                  : pct < 85
-                    ? "var(--amber)"
-                    : "var(--red)")}
-              ></div>
-            </div>
+        </div>
+      `:html`
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:22px;font-weight:800;color:var(--green)">1 EUR = ${parseFloat(rateUSD).toFixed(4)} USD</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">Banco Central Europeo</div>
           </div>
-
-          <div class="card">
-            <div style="font-size:14px;font-weight:700;margin-bottom:10px">
-              💱 Tasa de cambio
-            </div>
-            ${editRate
-              ? html`
-                  <div>
-                    <div
-                      style="font-size:12px;color:var(--text3);margin-bottom:8px"
-                    >
-                      Escribí el valor manual de 1 EUR en COP:
-                    </div>
-                    <div style="display:flex;gap:8px;align-items:center">
-                      <input
-                        class="input"
-                        type="number"
-                        value=${rateInput}
-                        onInput=${(e) => setRateInput(e.target.value)}
-                        placeholder="5000"
-                        style="font-size:18px;font-weight:800;flex:1"
-                      />
-                      <button
-                        class="btn btn-primary btn-sm"
-                        onClick=${saveRate}
-                      >
-                        ✓
-                      </button>
-                      <button
-                        class="btn btn-ghost btn-sm"
-                        onClick=${() => setEditRate(false)}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-                `
-              : html`
-                  <div
-                    style="display:flex;align-items:center;justify-content:space-between"
-                  >
-                    <div>
-                      <div
-                        style="font-size:22px;font-weight:800;color:var(--blue)"
-                      >
-                        1 EUR = ${rate.toLocaleString("es")} COP
-                      </div>
-                      <div
-                        style="font-size:11px;color:var(--text3);margin-top:2px"
-                      >
-                        Banco Central Europeo
-                      </div>
-                    </div>
-                    <div
-                      style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"
-                    >
-                      <button
-                        class="btn btn-ghost btn-sm"
-                        onClick=${fetchRate}
-                        disabled=${rl}
-                      >
-                        ${rl ? "⏳" : "🔄"} Auto
-                      </button>
-                      <button
-                        class="btn btn-ghost btn-sm"
-                        onClick=${() => {
-                          setRateInput(String(rate));
-                          setEditRate(true);
-                        }}
-                      >
-                        ✏️ Manual
-                      </button>
-                    </div>
-                  </div>
-                `}
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+            <button class="btn btn-ghost btn-sm" onClick=${fetchRateUSD} disabled=${rlUSD}>${rlUSD?'⏳':'🔄'} Auto</button>
+            <button class="btn btn-ghost btn-sm" onClick=${()=>{setRateUSDInput(String(rateUSD));setEditRateUSD(true)}}>✏️ Manual</button>
           </div>
+        </div>
+      `}
+    </div>
 
-          <div class="card">
-            <div style="font-size:14px;font-weight:700;margin-bottom:10px">
-              🗓️ Momentos especiales
-            </div>
-            ${[
-              [
-                "🎄",
-                "24–25 dic",
-                "Navidad en Madrid — Puerta del Sol iluminada",
-              ],
-              ["🎆", "31 dic", "Año Nuevo en Ámsterdam — Dam Square + canales"],
-              ["🌌", "10–12 ene", "Auroras Boreales en Rovaniemi, Laponia"],
-              [
-                "🏠",
-                "2–5 ene + 13–14 ene",
-                "Estocolmo — 6 noches GRATIS con amigos",
-              ],
-            ].map(
-              ([ic, dt, lb]) =>
-                html` <div
-                  style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:center"
-                >
-                  <span style="font-size:22px;flex-shrink:0">${ic}</span>
-                  <div>
-                    <div
-                      style="font-size:11px;color:var(--blue);font-weight:700"
-                    >
-                      ${dt}
-                    </div>
-                    <div style="font-size:13px;font-weight:500">${lb}</div>
-                  </div>
-                </div>`,
-            )}
-          </div>
+    <div class="card">
+      <div style="font-size:14px;font-weight:700;margin-bottom:10px">🗓️ Momentos especiales</div>
+      ${[['🎄','24–25 dic','Navidad en Madrid — Puerta del Sol iluminada'],['🎆','31 dic','Año Nuevo en Ámsterdam — Dam Square + canales'],['🌌','10–12 ene','Auroras Boreales en Rovaniemi, Laponia'],['🏠','2–5 ene + 13–14 ene','Estocolmo — 6 noches GRATIS con amigos']].map(([ic,dt,lb])=>html`
+        <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:center">
+          <span style="font-size:22px;flex-shrink:0">${ic}</span>
+          <div><div style="font-size:11px;color:var(--blue);font-weight:700">${dt}</div><div style="font-size:13px;font-weight:500">${lb}</div></div>
+        </div>`)}
+    </div>
 
-          <div class="card">
-            <div style="font-size:14px;font-weight:700;margin-bottom:10px">
-              📋 Datos del viaje
-            </div>
-            ${[
-              ["✈️", "Salida", "Mar 15 dic 2026 · BOG 16:00"],
-              ["🛬", "Llegan Milán", "Jue 17 dic · MXP 17:20"],
-              ["🛫", "Vuelo regreso", "Mar 19 ene 2027 · LIN 17:20"],
-              ["🏠", "Llegan BOG", "Mié 20 ene 2027 · 14:45"],
-              [
-                "🌍",
-                "Ruta",
-                "Madrid · Roma · Barcelona · Madrid · París · Bruselas · Ámsterdam · Estocolmo · Tallin · Helsinki · Rovaniemi · Praga · Milán",
-              ],
-              ["🌙", "Noches", "33 noches · 16 destinos"],
-              [
-                "👥",
-                "Viajeros",
-                "Alejandro · Valentina · Gustavo · Tío (desde Milán)",
-              ],
-              ["🏠", "Estocolmo", "6 noches GRATIS · ~€1.260 de ahorro"],
-              ["📋", "Reserva", "Despegar #183490346900"],
-            ].map(
-              ([ic, lb, vl]) =>
-                html` <div
-                  style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);align-items:flex-start"
-                >
-                  <span
-                    style="font-size:16px;width:22px;flex-shrink:0;margin-top:1px"
-                    >${ic}</span
-                  >
-                  <div style="flex:1">
-                    <div style="font-size:11px;color:var(--text3)">${lb}</div>
-                    <div
-                      style="font-size:13px;font-weight:600;white-space:normal;word-break:break-word;line-height:1.4"
-                    >
-                      ${vl}
-                    </div>
-                  </div>
-                </div>`,
-            )}
-          </div>
+    <div class="card">
+      <div style="font-size:14px;font-weight:700;margin-bottom:10px">📋 Datos del viaje</div>
+      ${[['✈️','Salida','Mar 15 dic 2026 · BOG 16:00'],['🛬','Llegan Milán','Jue 17 dic · MXP 17:20'],['🛫','Vuelo regreso','Mar 19 ene 2027 · LIN 17:20'],['🏠','Llegan BOG','Mié 20 ene 2027 · 14:45'],['🌍','Ruta','Madrid · Roma · Barcelona · Madrid · París · Bruselas · Ámsterdam · Estocolmo · Tallin · Helsinki · Rovaniemi · Praga · Milán'],['🌙','Noches','33 noches · 16 destinos'],['👥','Viajeros','Alejandro · Valentina · Gustavo · Tío (desde Milán)'],['🏠','Estocolmo','6 noches GRATIS · ~€1.260 de ahorro'],['📋','Reserva','Despegar #183490346900']].map(([ic,lb,vl])=>html`
+        <div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);align-items:flex-start">
+          <span style="font-size:16px;width:22px;flex-shrink:0;margin-top:1px">${ic}</span>
+          <div style="flex:1"><div style="font-size:11px;color:var(--text3)">${lb}</div><div style="font-size:13px;font-weight:600;white-space:normal;word-break:break-word;line-height:1.4">${vl}</div></div>
+        </div>`)}
+    </div>
 
-          <div class="card" style="margin-bottom:24px">
-            <div style="font-size:14px;font-weight:700;margin-bottom:10px">
-              ⚠️ Errores que cuestan caro
-            </div>
-            ${[
-              "Hotel Amsterdam NYE sin reserva → precio ×3 o no hay cupo.",
-              "Vaticano/Coliseo sin reserva online → 3-5h de fila.",
-              "Sagrada Familia sin reserva → 2-3h de fila. Solo online.",
-              "Laponia sin ropa polar adecuada → peligroso a -25°C.",
-              "Vuelo de vuelta desde LINATE (LIN), NO desde Malpensa (MXP).",
-              "No avisar al banco antes del viaje → bloquean la tarjeta.",
-              "Ryanair: siempre verificar el aeropuerto (Bergamo ≠ Milán).",
-            ].map(
-              (t) =>
-                html`<div
-                  style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)"
-                >
-                  <span style="color:var(--amber);flex-shrink:0">•</span>${t}
-                </div>`,
-            )}
-          </div>
-        </div>`;
-      }
+    <div class="card" style="margin-bottom:24px">
+      <div style="font-size:14px;font-weight:700;margin-bottom:10px">⚠️ Errores que cuestan caro</div>
+      ${['Hotel Amsterdam NYE sin reserva → precio ×3 o no hay cupo.','Vaticano/Coliseo sin reserva online → 3-5h de fila.','Sagrada Familia sin reserva → 2-3h de fila. Solo online.','Laponia sin ropa polar adecuada → peligroso a -25°C.','Vuelo de vuelta desde LINATE (LIN), NO desde Malpensa (MXP).','No avisar al banco antes del viaje → bloquean la tarjeta.','Ryanair: siempre verificar el aeropuerto (Bergamo ≠ Milán).'].map(t=>html`<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)"><span style="color:var(--amber);flex-shrink:0">•</span>${t}</div>`)}
+    </div>
 
-      // ══════════════════ ITINERARY ══════════════════
-      function ItinTab({ itin, setItin }) {
-        const [ed, setEd] = useState(null);
-        const [showAdd, setShowAdd] = useState(false);
-        const [form, setForm] = useState({});
-        const upd = (k, v) => setForm((p) => ({ ...p, [k]: v }));
-        const openEd = (c) => {
-          setForm({ ...c });
-          setEd(c.id);
-        };
-        const openAdd = () => {
-          setForm({
-            id: Date.now(),
-            emoji: "🌍",
-            city: "",
-            country: "",
-            dates: "",
-            nights: 1,
-            pax: 4,
-            transport: "",
-            special: "",
-          });
-          setShowAdd(true);
-        };
-        const saveEd = () => {
-          setItin((p) => p.map((c) => (c.id === form.id ? form : c)));
-          setEd(null);
-        };
-        const saveAdd = () => {
-          if (!form.city) return;
-          setItin((p) => [...p, form]);
-          setShowAdd(false);
-        };
-        const del = (id) => {
-          if (confirm("¿Eliminar esta ciudad?"))
-            setItin((p) => p.filter((c) => c.id !== id));
-        };
+    <div class="card" style="margin-bottom:32px;border:1px solid var(--red);background:rgba(239,68,68,0.06)">
+      <div style="font-size:14px;font-weight:700;margin-bottom:6px;color:var(--red)">🗑️ Resetear app</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Borra todos los datos (gastos, presupuesto, checklist, documentos e itinerario) y vuelve al estado inicial. Útil para empezar a planear un nuevo viaje.</div>
+      <button class="btn" style="width:100%;background:var(--red);color:#fff;font-weight:700;padding:12px;border-radius:12px;font-size:14px" onClick=${resetApp}>🗑️ Borrar todo y empezar de cero</button>
+    </div>
+  </div>`;
+}
 
-        return html`<div>
-          <div class="page-header" style="padding-top:8px">
-            <div class="page-title">🗺️ Itinerario</div>
-            <button class="btn btn-primary btn-sm" onClick=${openAdd}>
-              + Ciudad
-            </button>
-          </div>
-          <div style="padding:4px 16px 12px;font-size:12px;color:var(--text3)">
-            16 destinos · 33 noches · 15 dic 2026 – 20 ene 2027
-          </div>
-          <div style="padding:0 16px">
-            ${itin.map(
-              (c, i) =>
-                html`<div style="display:flex" key=${c.id}>
-                  <div
-                    style="display:flex;flex-direction:column;align-items:center;margin-right:12px;padding-top:4px"
-                  >
-                    <div
-                      style=${"width:12px;height:12px;border-radius:50%;flex-shrink:0;background:" +
-                      (c.nights === 0 ? "var(--amber)" : "var(--blue)")}
-                    ></div>
-                    ${i < itin.length - 1
-                      ? html`<div
-                          style="width:2px;flex:1;background:var(--border);margin:4px 0"
-                        ></div>`
-                      : ""}
-                  </div>
-                  <div style="flex:1;padding-bottom:16px">
-                    <div class="card-sm">
-                      <div
-                        style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px"
-                      >
-                        <div style="flex:1">
-                          <div
-                            style="display:flex;align-items:center;gap:6px;margin-bottom:2px"
-                          >
-                            <span style="font-size:22px">${c.emoji}</span>
-                            <div>
-                              <div style="font-size:15px;font-weight:700">
-                                ${c.city}
-                              </div>
-                              <div style="font-size:11px;color:var(--text3)">
-                                ${c.country}
-                              </div>
-                            </div>
-                          </div>
-                          <div
-                            style="font-size:12px;color:var(--text2);margin:4px 0"
-                          >
-                            ${c.dates}
-                          </div>
-                          <div
-                            style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px"
-                          >
-                            ${c.nights > 0
-                              ? html`<span class="badge badge-blue"
-                                  >${c.nights}
-                                  ${c.nights === 1 ? "noche" : "noches"}</span
-                                >`
-                              : ""}
-                            ${c.special
-                              ? html`<span class="badge badge-amber"
-                                  >${c.special}</span
-                                >`
-                              : ""}
-                          </div>
-                          <div
-                            style="font-size:11px;color:var(--text3);margin-top:6px"
-                          >
-                            🚌 ${c.transport}
-                          </div>
-                        </div>
-                        <div style="display:flex;flex-direction:column;gap:6px">
-                          <button class="btn-icon" onClick=${() => openEd(c)}>
-                            ✏️
-                          </button>
-                          <button
-                            class="btn-icon"
-                            style="color:var(--red)"
-                            onClick=${() => del(c.id)}
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>`,
-            )}
-          </div>
-          ${(ed || showAdd) &&
-          html`<div
-            class=${"modal-overlay" + (ed || showAdd ? " open" : "")}
-            onClick=${(e) => {
-              if (e.target.classList.contains("modal-overlay")) {
-                setEd(null);
-                setShowAdd(false);
-              }
-            }}
-          >
-            <div class="modal">
-              <div class="modal-handle"></div>
-              <div class="modal-header">
-                <span class="modal-title"
-                  >${ed ? "Editar ciudad" : "Nueva ciudad"}</span
-                >
-                <div style="display:flex;align-items:center;gap:8px">
-                  <button
-                    class="btn btn-primary btn-sm"
-                    onClick=${ed ? saveEd : saveAdd}
-                  >
-                    ${ed ? "Guardar" : "Agregar"}</button
-                  ><button
-                    class="btn-icon"
-                    onClick=${() => {
-                      setEd(null);
-                      setShowAdd(false);
-                    }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-              <div class="modal-body">
-                <div class="field">
-                  <label class="label">Emoji</label
-                  ><input
-                    class="input"
-                    value=${form.emoji || ""}
-                    onInput=${(e) => upd("emoji", e.target.value)}
-                    placeholder="🇫🇷"
-                  />
-                </div>
-                <div class="field">
-                  <label class="label">Ciudad</label
-                  ><input
-                    class="input"
-                    value=${form.city || ""}
-                    onInput=${(e) => upd("city", e.target.value)}
-                    placeholder="París"
-                  />
-                </div>
-                <div class="field">
-                  <label class="label">País</label
-                  ><input
-                    class="input"
-                    value=${form.country || ""}
-                    onInput=${(e) => upd("country", e.target.value)}
-                  />
-                </div>
-                <div class="field">
-                  <label class="label">Fechas</label
-                  ><input
-                    class="input"
-                    value=${form.dates || ""}
-                    onInput=${(e) => upd("dates", e.target.value)}
-                  />
-                </div>
-                <div class="field">
-                  <label class="label">Noches</label
-                  ><input
-                    class="input"
-                    type="number"
-                    min="0"
-                    value=${form.nights || 0}
-                    onInput=${(e) =>
-                      upd("nights", parseInt(e.target.value) || 0)}
-                  />
-                </div>
-                <div class="field">
-                  <label class="label">Transporte desde ciudad anterior</label
-                  ><input
-                    class="input"
-                    value=${form.transport || ""}
-                    onInput=${(e) => upd("transport", e.target.value)}
-                  />
-                </div>
-                <div class="field">
-                  <label class="label">Nota especial</label
-                  ><input
-                    class="input"
-                    value=${form.special || ""}
-                    onInput=${(e) => upd("special", e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>`}
-        </div>`;
-      }
+// ══════════════════ ITINERARY ══════════════════
+function ItinTab({itin,setItin}){
+  const[ed,setEd]=useState(null);
+  const[showAdd,setShowAdd]=useState(false);
+  const[form,setForm]=useState({});
+  const upd=(k,v)=>setForm(p=>({...p,[k]:v}));
+  const openEd=c=>{setForm({...c});setEd(c.id)};
+  const openAdd=()=>{setForm({id:Date.now(),emoji:'🌍',city:'',country:'',dates:'',nights:1,pax:4,transport:'',special:''});setShowAdd(true)};
+  const saveEd=()=>{setItin(p=>p.map(c=>c.id===form.id?form:c));setEd(null)};
+  const saveAdd=()=>{if(!form.city)return;setItin(p=>[...p,form]);setShowAdd(false)};
+  const del=id=>{if(confirm('¿Eliminar esta ciudad?'))setItin(p=>p.filter(c=>c.id!==id))};
 
-      // ══════════════════ EXPENSES ══════════════════
-      function ExpTab({ exp, setExp, itin, cur, rate }) {
-        const [showAdd, setShowAdd] = useState(false);
-        const [filter, setFilter] = useState("Todos");
-        const [form, setForm] = useState({
-          city: "",
-          category: "Comida",
-          amount: "",
-          currency: "EUR",
-          description: "",
-          date: new Date().toISOString().split("T")[0],
-        });
-        const upd = (k, v) => setForm((p) => ({ ...p, [k]: v }));
-        const cats = Object.keys(CAT_COLORS);
-        const cities = [
-          "General",
-          ...itin.filter((c) => c.city.indexOf("Ferry") < 0).map((c) => c.city),
-        ];
-        const filtered =
-          filter === "Todos" ? exp : exp.filter((e) => e.category === filter);
-        const total = filtered.reduce((s, e) => {
-          const v = parseFloat(e.amount) || 0;
-          return s + (e.currency === "EUR" ? v : v / rate);
-        }, 0);
-        const groupByCat = useMemo(() => {
-          const g = {};
-          exp.forEach((e) => {
-            const c = e.category || "Otro";
-            const v = parseFloat(e.amount) || 0;
-            g[c] = (g[c] || 0) + (e.currency === "EUR" ? v : v / rate);
-          });
-          return g;
-        }, [exp, rate]);
-        const add = () => {
-          if (!form.amount) return;
-          setExp((p) => [{ ...form, id: Date.now() }, ...p]);
-          setForm((p) => ({ ...p, amount: "", description: "" }));
-          setShowAdd(false);
-        };
-        const del = (id) => {
-          if (confirm("¿Eliminar gasto?"))
-            setExp((p) => p.filter((e) => e.id !== id));
-        };
-
-        return html`<div>
-          <div class="page-header" style="padding-top:8px">
-            <div class="page-title">💸 Gastos</div>
-            <button
-              class="btn btn-primary btn-sm"
-              onClick=${() => setShowAdd(true)}
-            >
-              + Gasto
-            </button>
-          </div>
-          <div class="card" style="margin-bottom:8px">
-            <div
-              style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"
-            >
-              <div style="font-size:13px;color:var(--text2)">
-                Total ${filter !== "Todos" ? filter : ""}
-              </div>
-              <div style="font-size:22px;font-weight:800;color:var(--amber)">
-                ${fmt(total, cur, rate)}
-              </div>
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:5px">
-              ${Object.entries(groupByCat).map(
-                ([c, v]) =>
-                  html`<div
-                    style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:var(--card2);font-size:11px"
-                  >
-                    <span>${CAT_ICONS[c] || "📌"}</span
-                    ><span style="color:var(--text2)">${c}:</span
-                    ><span style="font-weight:700">${fmt(v, cur, rate)}</span>
-                  </div>`,
-              )}
-            </div>
-          </div>
-          <div class="filter-row">
-            ${["Todos", ...cats].map(
-              (c) =>
-                html`<button
-                  class=${"filter-chip" + (filter === c ? " active" : "")}
-                  onClick=${() => setFilter(c)}
-                >
-                  ${c}
-                </button>`,
-            )}
-          </div>
-          <div style="padding:0 16px">
-            ${filtered.length === 0
-              ? html`<div class="empty">
-                  <div class="empty-icon">💸</div>
-                  <div>Sin gastos registrados</div>
-                  <div style="font-size:13px;margin-top:4px">
-                    Tocá + Gasto para agregar
-                  </div>
-                </div>`
-              : filtered.map(
-                  (e) =>
-                    html`<div class="expense-row" key=${e.id}>
-                      <div
-                        class="cat-icon"
-                        style=${"background:" +
-                        (CAT_COLORS[e.category] || "#64748B") +
-                        "22"}
-                      >
-                        ${CAT_ICONS[e.category] || "📌"}
-                      </div>
-                      <div style="flex:1;min-width:0">
-                        <div
-                          style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px"
-                        >
-                          ${e.description || e.category}
-                        </div>
-                        <div style="font-size:11px;color:var(--text3)">
-                          ${e.city || "General"} · ${e.date}
-                        </div>
-                      </div>
-                      <div style="text-align:right;flex-shrink:0">
-                        <div
-                          style="font-size:14px;font-weight:700;color:var(--amber)"
-                        >
-                          ${e.currency === "EUR" ? "€" : "$"}${parseFloat(
-                            e.amount,
-                          ).toLocaleString("es")}
-                        </div>
-                        <div style="font-size:10px;color:var(--text3)">
-                          ${e.currency}
-                        </div>
-                      </div>
-                      <button
-                        class="btn-icon"
-                        style="color:var(--red);margin-left:6px"
-                        onClick=${() => del(e.id)}
-                      >
-                        🗑️
-                      </button>
-                    </div>`,
-                )}
-          </div>
-          ${showAdd &&
-          html`<div
-            class="modal-overlay open"
-            onClick=${(e) => {
-              if (e.target.classList.contains("modal-overlay"))
-                setShowAdd(false);
-            }}
-          >
-            <div class="modal">
-              <div class="modal-handle"></div>
-              <div class="modal-header">
-                <span class="modal-title">Nuevo gasto</span>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <button class="btn btn-primary btn-sm" onClick=${add}>
-                    Guardar</button
-                  ><button class="btn-icon" onClick=${() => setShowAdd(false)}>
-                    ✕
-                  </button>
-                </div>
-              </div>
-              <div class="modal-body">
-                <div class="field">
-                  <label class="label">Monto</label>
-                  <div style="display:flex;gap:8px">
-                    <input
-                      class="input"
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      value=${form.amount}
-                      onInput=${(e) => upd("amount", e.target.value)}
-                      style="flex:1"
-                    />
-                    <select
-                      class="input"
-                      style="width:90px"
-                      value=${form.currency}
-                      onChange=${(e) => upd("currency", e.target.value)}
-                    >
-                      <option value="EUR">EUR €</option>
-                      <option value="COP">COP $</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="field">
-                  <label class="label">Categoría</label
-                  ><select
-                    class="input"
-                    value=${form.category}
-                    onChange=${(e) => upd("category", e.target.value)}
-                  >
-                    ${cats.map(
-                      (c) =>
-                        html`<option value=${c}>${CAT_ICONS[c]} ${c}</option>`,
-                    )}
-                  </select>
-                </div>
-                <div class="field">
-                  <label class="label">Ciudad</label
-                  ><select
-                    class="input"
-                    value=${form.city}
-                    onChange=${(e) => upd("city", e.target.value)}
-                  >
-                    ${cities.map(
-                      (c) =>
-                        html`<option value=${c === "General" ? "" : c}>
-                          ${c}
-                        </option>`,
-                    )}
-                  </select>
-                </div>
-                <div class="field">
-                  <label class="label">Descripción</label
-                  ><input
-                    class="input"
-                    placeholder="Ej: Cena Roma"
-                    value=${form.description}
-                    onInput=${(e) => upd("description", e.target.value)}
-                  />
-                </div>
-                <div class="field">
-                  <label class="label">Fecha</label
-                  ><input
-                    class="input"
-                    type="date"
-                    value=${form.date}
-                    onInput=${(e) => upd("date", e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>`}
-        </div>`;
-      }
-
-      // ══════════════════ BUDGET ══════════════════
-      function BudTab({ bud, setBud, exp, itin, cur, rate }) {
-        const [ed, setEd] = useState(null);
-        const [form, setForm] = useState({});
-        const [editCur, setEditCur] = useState("EUR");
-        const getSpent = (n) =>
-          exp
-            .filter((e) => e.city === n)
-            .reduce((s, e) => {
-              const v = parseFloat(e.amount) || 0;
-              return s + (e.currency === "EUR" ? v : v / rate);
-            }, 0);
-
-        const eurToDisplay = (eurVals, toCur) =>
-          Object.fromEntries(
-            Object.entries(eurVals).map(([k, v]) => [
-              k,
-              toCur === "COP" ? Math.round(v * rate) : v,
-            ]),
-          );
-
-        const openEd = (id) => {
-          const b = bud[id] || {
-            accom: 0,
-            transport: 0,
-            food: 0,
-            activities: 0,
-            misc: 0,
-          };
-          const c = cur;
-          setEditCur(c);
-          setForm(eurToDisplay(b, c));
-          setEd(id);
-        };
-
-        const changeEditCur = (newCur) => {
-          if (newCur === editCur) return;
-          setForm((p) =>
-            Object.fromEntries(
-              Object.entries(p).map(([k, v]) => [
-                k,
-                newCur === "COP"
-                  ? Math.round((parseFloat(v) || 0) * rate)
-                  : Math.round((parseFloat(v) || 0) / rate),
-              ]),
-            ),
-          );
-          setEditCur(newCur);
-        };
-
-        const save = () => {
-          const eurForm =
-            editCur === "COP"
-              ? Object.fromEntries(
-                  Object.entries(form).map(([k, v]) => [
-                    k,
-                    Math.round((parseFloat(v) || 0) / rate),
-                  ]),
-                )
-              : Object.fromEntries(
-                  Object.entries(form).map(([k, v]) => [k, parseFloat(v) || 0]),
-                );
-          setBud((p) => ({ ...p, [ed]: eurForm }));
-          setEd(null);
-        };
-
-        const upd = (k, v) => setForm((p) => ({ ...p, [k]: v }));
-        const formTotal = Object.values(form).reduce(
-          (s, v) => s + (parseFloat(v) || 0),
-          0,
-        );
-        const formTotalEUR = editCur === "COP" ? formTotal / rate : formTotal;
-        const edCity = ed !== null ? itin.find((c) => c.id === ed) : null;
-
-        const cities = itin.filter((c) => c.nights > 0);
-        const grandBud = Object.values(bud).reduce(
-          (s, b) => s + budgetTotal(b),
-          0,
-        );
-        const grandSpent = exp.reduce((s, e) => {
-          const v = parseFloat(e.amount) || 0;
-          return s + (e.currency === "EUR" ? v : v / rate);
-        }, 0);
-        const pct =
-          grandBud > 0 ? Math.min(100, (grandSpent / grandBud) * 100) : 0;
-
-        return html`<div>
-          <div class="page-header" style="padding-top:8px">
-            <div class="page-title">📊 Presupuesto</div>
-          </div>
-          <div class="card">
-            <div
-              style="display:flex;justify-content:space-between;margin-bottom:8px"
-            >
-              <div>
-                <div style="font-size:12px;color:var(--text3)">
-                  Total estimado
-                </div>
-                <div style="font-size:20px;font-weight:800;color:var(--blue)">
-                  ${fmt(grandBud, cur, rate)}
-                </div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-size:12px;color:var(--text3)">
-                  Total gastado
-                </div>
-                <div style="font-size:20px;font-weight:800;color:var(--amber)">
-                  ${fmt(grandSpent, cur, rate)}
-                </div>
-              </div>
-            </div>
-            <div class="progress-bar">
-              <div
-                class="progress-fill"
-                style=${"width:" +
-                pct +
-                "%;background:" +
-                (pct < 60
-                  ? "var(--green)"
-                  : pct < 85
-                    ? "var(--amber)"
-                    : "var(--red)")}
-              ></div>
-            </div>
-            <div
-              style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--text3)"
-            >
-              <span>${pct.toFixed(1)}% utilizado</span
-              ><span>Disponible: ${fmt(grandBud - grandSpent, cur, rate)}</span>
-            </div>
-          </div>
-          <div class="section-title">Por ciudad</div>
-          ${cities.map((c) => {
-            const b = bud[c.id] || {
-              accom: 0,
-              transport: 0,
-              food: 0,
-              activities: 0,
-              misc: 0,
-            };
-            const est = budgetTotal(b);
-            const spent = getSpent(c.city);
-            const p = est > 0 ? Math.min(100, (spent / est) * 100) : 0;
-            return html`<div class="budget-city" key=${c.id}>
-              <div
-                style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"
-              >
-                <div style="display:flex;align-items:center;gap:8px">
+  return html`<div>
+    <div class="page-header" style="padding-top:8px">
+      <div class="page-title">🗺️ Itinerario</div>
+      <button class="btn btn-primary btn-sm" onClick=${openAdd}>+ Ciudad</button>
+    </div>
+    <div style="padding:4px 16px 12px;font-size:12px;color:var(--text3)">16 destinos · 33 noches · 15 dic 2026 – 20 ene 2027</div>
+    <div style="padding:0 16px">
+      ${itin.map((c,i)=>html`<div style="display:flex" key=${c.id}>
+        <div style="display:flex;flex-direction:column;align-items:center;margin-right:12px;padding-top:4px">
+          <div style=${'width:12px;height:12px;border-radius:50%;flex-shrink:0;background:'+(c.nights===0?'var(--amber)':'var(--blue)')}></div>
+          ${i<itin.length-1?html`<div style="width:2px;flex:1;background:var(--border);margin:4px 0"></div>`:''}
+        </div>
+        <div style="flex:1;padding-bottom:16px">
+          <div class="card-sm">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
                   <span style="font-size:22px">${c.emoji}</span>
-                  <div>
-                    <div style="font-size:14px;font-weight:700">${c.city}</div>
-                    <div style="font-size:11px;color:var(--text3)">
-                      ${c.nights} noches · ${c.dates}
-                    </div>
-                  </div>
+                  <div><div style="font-size:15px;font-weight:700">${c.city}</div><div style="font-size:11px;color:var(--text3)">${c.country}</div></div>
                 </div>
-                <div
-                  style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px"
-                >
-                  <div style="font-size:13px;font-weight:700;color:var(--blue)">
-                    ${fmt(est, cur, rate)}
-                  </div>
-                  <button
-                    class="btn btn-ghost btn-sm"
-                    onClick=${() => openEd(c.id)}
-                  >
-                    ✏️ Editar
-                  </button>
+                <div style="font-size:12px;color:var(--text2);margin:4px 0">${c.dates}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+                  ${c.nights>0?html`<span class="badge badge-blue">${c.nights} ${c.nights===1?'noche':'noches'}</span>`:''}
+                  ${c.special?html`<span class="badge badge-amber">${c.special}</span>`:''}
                 </div>
+                <div style="font-size:11px;color:var(--text3);margin-top:6px">🚌 ${c.transport}</div>
               </div>
-              <div class="progress-bar">
-                <div
-                  class="progress-fill"
-                  style=${"width:" +
-                  p +
-                  "%;background:" +
-                  (p < 60
-                    ? "var(--green)"
-                    : p < 85
-                      ? "var(--amber)"
-                      : "var(--red)")}
-                ></div>
-              </div>
-              <div
-                style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--text3)"
-              >
-                <span>Gastado: ${fmt(spent, cur, rate)}</span
-                ><span>${p.toFixed(0)}%</span>
-              </div>
-              <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">
-                ${[
-                  ["🏨", b.accom, "Aloj."],
-                  ["🚆", b.transport, "Transp."],
-                  ["🍽️", b.food, "Comida"],
-                  ["🎟️", b.activities, "Activ."],
-                  ["📌", b.misc, "Extra"],
-                ].map(
-                  ([ic, v, lb]) =>
-                    html`<div
-                      style="font-size:10px;padding:3px 7px;background:var(--card2);border-radius:6px;color:var(--text2)"
-                    >
-                      ${ic} ${lb}: <strong>${fmt(v, cur, rate)}</strong>
-                    </div>`,
-                )}
-              </div>
-            </div>`;
-          })}
-          ${ed !== null &&
-          html`<div
-            class="modal-overlay open"
-            onClick=${(e) => {
-              if (e.target.classList.contains("modal-overlay")) setEd(null);
-            }}
-          >
-            <div class="modal">
-              <div class="modal-handle"></div>
-              <div class="modal-header">
-                <span class="modal-title"
-                  >${edCity?.emoji} ${edCity?.city}</span
-                >
-                <div style="display:flex;align-items:center;gap:8px">
-                  <div class="cur-toggle">
-                    <button
-                      class=${"cur-btn" + (editCur === "EUR" ? " active" : "")}
-                      onClick=${() => changeEditCur("EUR")}
-                    >
-                      EUR
-                    </button>
-                    <button
-                      class=${"cur-btn" + (editCur === "COP" ? " active" : "")}
-                      onClick=${() => changeEditCur("COP")}
-                    >
-                      COP
-                    </button>
-                  </div>
-                  <button class="btn btn-primary btn-sm" onClick=${save}>
-                    Guardar
-                  </button>
-                  <button class="btn-icon" onClick=${() => setEd(null)}>
-                    ✕
-                  </button>
-                </div>
-              </div>
-              <div class="modal-body">
-                <div
-                  style="font-size:11px;color:var(--text3);margin-bottom:12px;background:var(--card2);padding:8px 10px;border-radius:8px"
-                >
-                  Ingresá los valores en
-                  <strong style="color:var(--blue)"
-                    >${editCur === "EUR"
-                      ? "Euros €"
-                      : "Pesos colombianos $"}</strong
-                  >. Podés cambiar la moneda arriba.
-                </div>
-                ${[
-                  ["accom", "🏨 Alojamiento"],
-                  ["transport", "🚆 Transporte"],
-                  ["food", "🍽️ Comida"],
-                  ["activities", "🎟️ Actividades"],
-                  ["misc", "📌 Extras"],
-                ].map(
-                  ([k, lb]) =>
-                    html` <div class="field">
-                      <label class="label">${lb}</label>
-                      <div style="position:relative">
-                        <span
-                          style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;font-weight:700;pointer-events:none"
-                          >${editCur === "EUR" ? "€" : "$"}</span
-                        >
-                        <input
-                          class="input"
-                          style="padding-left:26px"
-                          type="number"
-                          step="1"
-                          min="0"
-                          value=${form[k] || 0}
-                          onInput=${(e) => upd(k, e.target.value)}
-                        />
-                      </div>
-                    </div>`,
-                )}
-                <div
-                  style="padding:12px;background:var(--card2);border-radius:10px;margin-bottom:14px"
-                >
-                  <div
-                    style="display:flex;justify-content:space-between;align-items:center"
-                  >
-                    <span
-                      style="font-size:12px;color:var(--text2);font-weight:600"
-                      >Total ciudad</span
-                    >
-                    <div style="text-align:right">
-                      <div
-                        style="font-size:20px;font-weight:800;color:var(--blue)"
-                      >
-                        ${editCur === "EUR" ? "€" : "$"}${Math.round(
-                          formTotal,
-                        ).toLocaleString("es")}
-                      </div>
-                      <div style="font-size:11px;color:var(--text3)">
-                        ${editCur === "COP"
-                          ? "≈ €" +
-                            Math.round(formTotalEUR).toLocaleString("es")
-                          : "≈ $" +
-                            Math.round(formTotal * rate).toLocaleString("es") +
-                            " COP"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <button class="btn-icon" onClick=${()=>openEd(c)}>✏️</button>
+                <button class="btn-icon" style="color:var(--red)" onClick=${()=>del(c.id)}>🗑️</button>
               </div>
             </div>
-          </div>`}
-        </div>`;
-      }
-
-      // ══════════════════ CHECKLIST ══════════════════
-      function ChkTab({ chk, setChk }) {
-        const [filter, setFilter] = useState("Todos");
-        const [openCat, setOpenCat] = useState(null);
-        const [showAdd, setShowAdd] = useState(false);
-        const [newItem, setNewItem] = useState({
-          cat: Object.keys(chk)[0],
-          text: "",
-          urgent: false,
-        });
-        const toggle = (cat, id) =>
-          setChk((p) => ({
-            ...p,
-            [cat]: p[cat].map((i) =>
-              i.id === id ? { ...i, done: !i.done } : i,
-            ),
-          }));
-        const delItem = (cat, id) =>
-          setChk((p) => ({ ...p, [cat]: p[cat].filter((i) => i.id !== id) }));
-        const addItem = () => {
-          if (!newItem.text) return;
-          const item = {
-            id: "u" + Date.now(),
-            text: newItem.text,
-            done: false,
-            urgent: newItem.urgent,
-          };
-          setChk((p) => ({ ...p, [newItem.cat]: [...p[newItem.cat], item] }));
-          setShowAdd(false);
-          setNewItem((p) => ({ ...p, text: "", urgent: false }));
-        };
-        const total = Object.values(chk).reduce((s, c) => s + c.length, 0);
-        const done = Object.values(chk).reduce(
-          (s, c) => s + c.filter((i) => i.done).length,
-          0,
-        );
-        const urgent = Object.values(chk).reduce(
-          (s, c) => s + c.filter((i) => i.urgent && !i.done).length,
-          0,
-        );
-        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-
-        return html`<div>
-          <div class="page-header" style="padding-top:8px">
-            <div class="page-title">✅ Checklist</div>
-            <button
-              class="btn btn-primary btn-sm"
-              onClick=${() => setShowAdd(true)}
-            >
-              + Item
-            </button>
           </div>
-          <div class="card" style="margin-bottom:8px">
-            <div
-              style="display:flex;justify-content:space-between;margin-bottom:8px"
-            >
-              <div>
-                <span style="font-size:28px;font-weight:900;color:var(--green)"
-                  >${done}</span
-                ><span style="font-size:14px;color:var(--text2)">
-                  / ${total}</span
-                >
+        </div>
+      </div>`)}
+    </div>
+    ${(ed||showAdd)&&html`<div class=${'modal-overlay'+(ed||showAdd?' open':'')} onClick=${e=>{if(e.target.classList.contains('modal-overlay')){setEd(null);setShowAdd(false)}}}>
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-header"><span class="modal-title">${ed?'Editar ciudad':'Nueva ciudad'}</span><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-primary btn-sm" onClick=${ed?saveEd:saveAdd}>${ed?'Guardar':'Agregar'}</button><button class="btn-icon" onClick=${()=>{setEd(null);setShowAdd(false)}}>✕</button></div></div>
+        <div class="modal-body">
+          <div class="field"><label class="label">Emoji</label><input class="input" value=${form.emoji||''} onInput=${e=>upd('emoji',e.target.value)} placeholder="🇫🇷"/></div>
+          <div class="field"><label class="label">Ciudad</label><input class="input" value=${form.city||''} onInput=${e=>upd('city',e.target.value)} placeholder="París"/></div>
+          <div class="field"><label class="label">País</label><input class="input" value=${form.country||''} onInput=${e=>upd('country',e.target.value)}/></div>
+          <div class="field"><label class="label">Fechas</label><input class="input" value=${form.dates||''} onInput=${e=>upd('dates',e.target.value)}/></div>
+          <div class="field"><label class="label">Noches</label><input class="input" type="number" min="0" value=${form.nights||0} onInput=${e=>upd('nights',parseInt(e.target.value)||0)}/></div>
+          <div class="field"><label class="label">Transporte desde ciudad anterior</label><input class="input" value=${form.transport||''} onInput=${e=>upd('transport',e.target.value)}/></div>
+          <div class="field"><label class="label">Nota especial</label><input class="input" value=${form.special||''} onInput=${e=>upd('special',e.target.value)}/></div>
+        </div>
+      </div>
+    </div>`}
+  </div>`;
+}
+
+// ══════════════════ EXPENSES ══════════════════
+function ExpTab({exp,setExp,itin,cur,rate,rateUSD}){
+  const[showAdd,setShowAdd]=useState(false);
+  const[filter,setFilter]=useState('Todos');
+  const[form,setForm]=useState({city:'',category:'Comida',amount:'',currency:'EUR',description:'',date:new Date().toISOString().split('T')[0]});
+  const upd=(k,v)=>setForm(p=>({...p,[k]:v}));
+  const cats=Object.keys(CAT_COLORS);
+  const cities=['General',...itin.filter(c=>c.city.indexOf('Ferry')<0).map(c=>c.city)];
+  const filtered=filter==='Todos'?exp:exp.filter(e=>e.category===filter);
+  const total=filtered.reduce((s,e)=>{const v=parseFloat(e.amount)||0;return s+(e.currency==='EUR'?v:v/rate)},0);
+  const groupByCat=useMemo(()=>{const g={};exp.forEach(e=>{const c=e.category||'Otro';const v=parseFloat(e.amount)||0;g[c]=(g[c]||0)+(e.currency==='EUR'?v:v/rate)});return g;},[exp,rate]);
+  const add=()=>{if(!form.amount)return;setExp(p=>[{...form,id:Date.now()},...p]);setForm(p=>({...p,amount:'',description:''}));setShowAdd(false)};
+  const del=id=>{if(confirm('¿Eliminar gasto?'))setExp(p=>p.filter(e=>e.id!==id))};
+
+  return html`<div>
+    <div class="page-header" style="padding-top:8px">
+      <div class="page-title">💸 Gastos</div>
+      <button class="btn btn-primary btn-sm" onClick=${()=>setShowAdd(true)}>+ Gasto</button>
+    </div>
+    <div class="card" style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:13px;color:var(--text2)">Total ${filter!=='Todos'?filter:''}</div>
+        <div style="font-size:22px;font-weight:800;color:var(--amber)">${fmt(total,cur,rate,rateUSD)}</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        ${Object.entries(groupByCat).map(([c,v])=>html`<div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:var(--card2);font-size:11px"><span>${CAT_ICONS[c]||'📌'}</span><span style="color:var(--text2)">${c}:</span><span style="font-weight:700">${fmt(v,cur,rate,rateUSD)}</span></div>`)}
+      </div>
+    </div>
+    <div class="filter-row">${['Todos',...cats].map(c=>html`<button class=${'filter-chip'+(filter===c?' active':'')} onClick=${()=>setFilter(c)}>${c}</button>`)}</div>
+    <div style="padding:0 16px">
+      ${filtered.length===0?html`<div class="empty"><div class="empty-icon">💸</div><div>Sin gastos registrados</div><div style="font-size:13px;margin-top:4px">Tocá + Gasto para agregar</div></div>`:
+      filtered.map(e=>html`<div class="expense-row" key=${e.id}>
+        <div class="cat-icon" style=${'background:'+(CAT_COLORS[e.category]||'#64748B')+'22'}>${CAT_ICONS[e.category]||'📌'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px">${e.description||e.category}</div>
+          <div style="font-size:11px;color:var(--text3)">${e.city||'General'} · ${e.date}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:14px;font-weight:700;color:var(--amber)">${e.currency==='EUR'?'€':'$'}${parseFloat(e.amount).toLocaleString('es')}</div>
+          <div style="font-size:10px;color:var(--text3)">${e.currency}</div>
+        </div>
+        <button class="btn-icon" style="color:var(--red);margin-left:6px" onClick=${()=>del(e.id)}>🗑️</button>
+      </div>`)}
+    </div>
+    ${showAdd&&html`<div class="modal-overlay open" onClick=${e=>{if(e.target.classList.contains('modal-overlay'))setShowAdd(false)}}>
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-header"><span class="modal-title">Nuevo gasto</span><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-primary btn-sm" onClick=${add}>Guardar</button><button class="btn-icon" onClick=${()=>setShowAdd(false)}>✕</button></div></div>
+        <div class="modal-body">
+          <div class="field"><label class="label">Monto</label>
+            <div style="display:flex;gap:8px">
+              <input class="input" type="number" step="0.01" placeholder="0.00" value=${form.amount} onInput=${e=>upd('amount',e.target.value)} style="flex:1"/>
+              <select class="input" style="width:90px" value=${form.currency} onChange=${e=>upd('currency',e.target.value)}><option value="EUR">EUR €</option><option value="COP">COP $</option></select>
+            </div>
+          </div>
+          <div class="field"><label class="label">Categoría</label><select class="input" value=${form.category} onChange=${e=>upd('category',e.target.value)}>${cats.map(c=>html`<option value=${c}>${CAT_ICONS[c]} ${c}</option>`)}</select></div>
+          <div class="field"><label class="label">Ciudad</label><select class="input" value=${form.city} onChange=${e=>upd('city',e.target.value)}>${cities.map(c=>html`<option value=${c==='General'?'':c}>${c}</option>`)}</select></div>
+          <div class="field"><label class="label">Descripción</label><input class="input" placeholder="Ej: Cena Roma" value=${form.description} onInput=${e=>upd('description',e.target.value)}/></div>
+          <div class="field"><label class="label">Fecha</label><input class="input" type="date" value=${form.date} onInput=${e=>upd('date',e.target.value)}/></div>
+        </div>
+      </div>
+    </div>`}
+  </div>`;
+}
+
+// ══════════════════ BUDGET ══════════════════
+function BudTab({bud,setBud,exp,itin,cur,rate,rateUSD}){
+  const[ed,setEd]=useState(null);
+  const[form,setForm]=useState({});
+  const[editCur,setEditCur]=useState('EUR');
+  const getSpent=n=>exp.filter(e=>e.city===n).reduce((s,e)=>{const v=parseFloat(e.amount)||0;return s+(e.currency==='EUR'?v:v/rate)},0);
+
+  const eurToDisplay=(eurVals,toCur)=>Object.fromEntries(Object.entries(eurVals).map(([k,v])=>[k,toCur==='COP'?Math.round(v*rate):v]));
+
+  const openEd=id=>{
+    const b=bud[id]||{accom:0,transport:0,food:0,activities:0,misc:0};
+    const c=cur==='USD'?'EUR':cur;
+    setEditCur(c);
+    setForm(eurToDisplay(b,c));
+    setEd(id);
+  };
+
+  const changeEditCur=newCur=>{
+    if(newCur===editCur)return;
+    setForm(p=>Object.fromEntries(Object.entries(p).map(([k,v])=>[k,
+      newCur==='COP'?Math.round((parseFloat(v)||0)*rate):Math.round((parseFloat(v)||0)/rate)
+    ])));
+    setEditCur(newCur);
+  };
+
+  const save=()=>{
+    const eurForm=editCur==='COP'
+      ?Object.fromEntries(Object.entries(form).map(([k,v])=>[k,Math.round((parseFloat(v)||0)/rate)]))
+      :Object.fromEntries(Object.entries(form).map(([k,v])=>[k,parseFloat(v)||0]));
+    setBud(p=>({...p,[ed]:eurForm}));
+    setEd(null);
+  };
+
+  const upd=(k,v)=>setForm(p=>({...p,[k]:v}));
+  const formTotal=Object.values(form).reduce((s,v)=>s+(parseFloat(v)||0),0);
+  const formTotalEUR=editCur==='COP'?formTotal/rate:formTotal;
+  const edCity=ed!==null?itin.find(c=>c.id===ed):null;
+
+  const cities=itin.filter(c=>c.nights>0);
+  const grandBud=Object.values(bud).reduce((s,b)=>s+budgetTotal(b),0);
+  const grandSpent=exp.reduce((s,e)=>{const v=parseFloat(e.amount)||0;return s+(e.currency==='EUR'?v:v/rate)},0);
+  const pct=grandBud>0?Math.min(100,(grandSpent/grandBud)*100):0;
+
+  return html`<div>
+    <div class="page-header" style="padding-top:8px"><div class="page-title">📊 Presupuesto</div></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <div><div style="font-size:12px;color:var(--text3)">Total estimado</div><div style="font-size:20px;font-weight:800;color:var(--blue)">${fmt(grandBud,cur,rate,rateUSD)}</div></div>
+        <div style="text-align:right"><div style="font-size:12px;color:var(--text3)">Total gastado</div><div style="font-size:20px;font-weight:800;color:var(--amber)">${fmt(grandSpent,cur,rate,rateUSD)}</div></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style=${'width:'+pct+'%;background:'+(pct<60?'var(--green)':pct<85?'var(--amber)':'var(--red)')}></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--text3)">
+        <span>${pct.toFixed(1)}% utilizado</span><span>Disponible: ${fmt(grandBud-grandSpent,cur,rate,rateUSD)}</span>
+      </div>
+    </div>
+    <div class="section-title">Por ciudad</div>
+    ${cities.map(c=>{
+      const b=bud[c.id]||{accom:0,transport:0,food:0,activities:0,misc:0};
+      const est=budgetTotal(b);const spent=getSpent(c.city);
+      const p=est>0?Math.min(100,(spent/est)*100):0;
+      return html`<div class="budget-city" key=${c.id}>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:22px">${c.emoji}</span>
+            <div><div style="font-size:14px;font-weight:700">${c.city}</div><div style="font-size:11px;color:var(--text3)">${c.nights} noches · ${c.dates}</div></div>
+          </div>
+          <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+            <div style="font-size:13px;font-weight:700;color:var(--blue)">${fmt(est,cur,rate,rateUSD)}</div>
+            <button class="btn btn-ghost btn-sm" onClick=${()=>openEd(c.id)}>✏️ Editar</button>
+          </div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style=${'width:'+p+'%;background:'+(p<60?'var(--green)':p<85?'var(--amber)':'var(--red)')}></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--text3)"><span>Gastado: ${fmt(spent,cur,rate,rateUSD)}</span><span>${p.toFixed(0)}%</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">
+          ${[['🏨',b.accom,'Aloj.'],['🚆',b.transport,'Transp.'],['🍽️',b.food,'Comida'],['🎟️',b.activities,'Activ.'],['📌',b.misc,'Extra']].map(([ic,v,lb])=>html`<div style="font-size:10px;padding:3px 7px;background:var(--card2);border-radius:6px;color:var(--text2)">${ic} ${lb}: <strong>${fmt(v,cur,rate,rateUSD)}</strong></div>`)}
+        </div>
+      </div>`;
+    })}
+    ${ed!==null&&html`<div class="modal-overlay open" onClick=${e=>{if(e.target.classList.contains('modal-overlay'))setEd(null)}}>
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+          <span class="modal-title">${edCity?.emoji} ${edCity?.city}</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="cur-toggle">
+              <button class=${'cur-btn'+(editCur==='EUR'?' active':'')} onClick=${()=>changeEditCur('EUR')}>EUR</button>
+              <button class=${'cur-btn'+(editCur==='COP'?' active':'')} onClick=${()=>changeEditCur('COP')}>COP</button>
+            </div>
+            <button class="btn btn-primary btn-sm" onClick=${save}>Guardar</button>
+            <button class="btn-icon" onClick=${()=>setEd(null)}>✕</button>
+          </div>
+        </div>
+        <div class="modal-body">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:12px;background:var(--card2);padding:8px 10px;border-radius:8px">
+            Ingresá los valores en <strong style="color:var(--blue)">${editCur==='EUR'?'Euros €':'Pesos colombianos $'}</strong>. Podés cambiar la moneda arriba.
+          </div>
+          ${[['accom','🏨 Alojamiento'],['transport','🚆 Transporte'],['food','🍽️ Comida'],['activities','🎟️ Actividades'],['misc','📌 Extras']].map(([k,lb])=>html`
+            <div class="field">
+              <label class="label">${lb}</label>
+              <div style="position:relative">
+                <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;font-weight:700;pointer-events:none">${editCur==='EUR'?'€':'$'}</span>
+                <input class="input" style="padding-left:26px" type="number" step="1" min="0"
+                  value=${form[k]||0} onInput=${e=>upd(k,e.target.value)}/>
               </div>
+            </div>`)}
+          <div style="padding:12px;background:var(--card2);border-radius:10px;margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:12px;color:var(--text2);font-weight:600">Total ciudad</span>
               <div style="text-align:right">
-                ${urgent > 0
-                  ? html`<div
-                      style="font-size:12px;color:var(--red);font-weight:700"
-                    >
-                      🚨 ${urgent} urgentes
-                    </div>`
-                  : ""}
-                <div style="font-size:12px;color:var(--text2)">
-                  ${pct}% completado
-                </div>
+                <div style="font-size:20px;font-weight:800;color:var(--blue)">${editCur==='EUR'?'€':'$'}${Math.round(formTotal).toLocaleString('es')}</div>
+                <div style="font-size:11px;color:var(--text3)">${editCur==='COP'?'≈ €'+Math.round(formTotalEUR).toLocaleString('es'):'≈ $'+Math.round(formTotal*rate).toLocaleString('es')+' COP'}</div>
               </div>
-            </div>
-            <div class="progress-bar">
-              <div
-                class="progress-fill"
-                style=${"width:" + pct + "%;background:var(--green)"}
-              ></div>
             </div>
           </div>
-          <div class="filter-row">
-            ${["Todos", "Urgentes", "Pendientes", "Completados"].map(
-              (f) =>
-                html`<button
-                  class=${"filter-chip" + (filter === f ? " active" : "")}
-                  onClick=${() => setFilter(f)}
-                >
-                  ${f}
-                </button>`,
-            )}
+        </div>
+      </div>
+    </div>`}
+  </div>`;
+}
+
+// ══════════════════ CHECKLIST ══════════════════
+function ChkTab({chk,setChk}){
+  const[filter,setFilter]=useState('Todos');
+  const[openCat,setOpenCat]=useState(null);
+  const[showAdd,setShowAdd]=useState(false);
+  const[newItem,setNewItem]=useState({cat:Object.keys(chk)[0],text:'',urgent:false});
+  const toggle=(cat,id)=>setChk(p=>({...p,[cat]:p[cat].map(i=>i.id===id?{...i,done:!i.done}:i)}));
+  const delItem=(cat,id)=>setChk(p=>({...p,[cat]:p[cat].filter(i=>i.id!==id)}));
+  const addItem=()=>{if(!newItem.text)return;const item={id:'u'+Date.now(),text:newItem.text,done:false,urgent:newItem.urgent};setChk(p=>({...p,[newItem.cat]:[...p[newItem.cat],item]}));setShowAdd(false);setNewItem(p=>({...p,text:'',urgent:false}))};
+  const total=Object.values(chk).reduce((s,c)=>s+c.length,0);
+  const done=Object.values(chk).reduce((s,c)=>s+c.filter(i=>i.done).length,0);
+  const urgent=Object.values(chk).reduce((s,c)=>s+c.filter(i=>i.urgent&&!i.done).length,0);
+  const pct=total>0?Math.round((done/total)*100):0;
+
+  return html`<div>
+    <div class="page-header" style="padding-top:8px">
+      <div class="page-title">✅ Checklist</div>
+      <button class="btn btn-primary btn-sm" onClick=${()=>setShowAdd(true)}>+ Item</button>
+    </div>
+    <div class="card" style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <div><span style="font-size:28px;font-weight:900;color:var(--green)">${done}</span><span style="font-size:14px;color:var(--text2)"> / ${total}</span></div>
+        <div style="text-align:right">${urgent>0?html`<div style="font-size:12px;color:var(--red);font-weight:700">🚨 ${urgent} urgentes</div>`:''}<div style="font-size:12px;color:var(--text2)">${pct}% completado</div></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style=${'width:'+pct+'%;background:var(--green)'}></div></div>
+    </div>
+    <div class="filter-row">${['Todos','Urgentes','Pendientes','Completados'].map(f=>html`<button class=${'filter-chip'+(filter===f?' active':'')} onClick=${()=>setFilter(f)}>${f}</button>`)}</div>
+    ${Object.entries(chk).map(([cat,items])=>{
+      let filtered=items;
+      if(filter==='Urgentes')filtered=items.filter(i=>i.urgent&&!i.done);
+      if(filter==='Pendientes')filtered=items.filter(i=>!i.done);
+      if(filter==='Completados')filtered=items.filter(i=>i.done);
+      if(filtered.length===0)return null;
+      const catDone=filtered.filter(i=>i.done).length;const isOpen=openCat===cat;
+      return html`<div key=${cat} style="margin:0 16px 8px">
+        <button style="width:100%;background:var(--card);border:none;border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--text)" onClick=${()=>setOpenCat(isOpen?null:cat)}>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:14px;font-weight:700">${cat}</span>
+            <span class="badge badge-blue">${catDone}/${filtered.length}</span>
+            ${filtered.some(i=>i.urgent&&!i.done)?html`<span class="badge badge-red">🚨</span>`:''}
           </div>
-          ${Object.entries(chk).map(([cat, items]) => {
-            let filtered = items;
-            if (filter === "Urgentes")
-              filtered = items.filter((i) => i.urgent && !i.done);
-            if (filter === "Pendientes")
-              filtered = items.filter((i) => !i.done);
-            if (filter === "Completados")
-              filtered = items.filter((i) => i.done);
-            if (filtered.length === 0) return null;
-            const catDone = filtered.filter((i) => i.done).length;
-            const isOpen = openCat === cat;
-            return html`<div key=${cat} style="margin:0 16px 8px">
-              <button
-                style="width:100%;background:var(--card);border:none;border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--text)"
-                onClick=${() => setOpenCat(isOpen ? null : cat)}
-              >
-                <div style="display:flex;align-items:center;gap:8px">
-                  <span style="font-size:14px;font-weight:700">${cat}</span>
-                  <span class="badge badge-blue"
-                    >${catDone}/${filtered.length}</span
-                  >
-                  ${filtered.some((i) => i.urgent && !i.done)
-                    ? html`<span class="badge badge-red">🚨</span>`
-                    : ""}
-                </div>
-                <span style="color:var(--text3)">${isOpen ? "▲" : "▼"}</span>
-              </button>
-              ${isOpen &&
-              html`<div
-                style="background:var(--card);border-radius:0 0 12px 12px;padding:0 14px;margin-top:1px"
-              >
-                ${filtered.map(
-                  (i) =>
-                    html`<div class="toggle-row" key=${i.id}>
-                      <div
-                        style="display:flex;align-items:flex-start;gap:10px;flex:1"
-                      >
-                        <button
-                          class=${"checkbox" + (i.done ? " checked" : "")}
-                          onClick=${() => toggle(cat, i.id)}
-                        >
-                          ${i.done ? "✓" : ""}
-                        </button>
-                        <div style="flex:1">
-                          <div
-                            style=${"font-size:13px;font-weight:500;" +
-                            (i.done
-                              ? "text-decoration:line-through;color:var(--text3);"
-                              : "")}
-                          >
-                            ${i.text}
-                          </div>
-                          ${i.urgent && !i.done
-                            ? html`<span
-                                class="badge badge-red"
-                                style="margin-top:3px"
-                                >🚨 Urgente</span
-                              >`
-                            : ""}
-                        </div>
-                      </div>
-                      <button
-                        class="btn-icon"
-                        style="color:var(--red);margin-left:6px"
-                        onClick=${() => delItem(cat, i.id)}
-                      >
-                        🗑️
-                      </button>
-                    </div>`,
-                )}
-              </div>`}
-            </div>`;
-          })}
-          ${showAdd &&
-          html`<div
-            class="modal-overlay open"
-            onClick=${(e) => {
-              if (e.target.classList.contains("modal-overlay"))
-                setShowAdd(false);
-            }}
-          >
-            <div class="modal">
-              <div class="modal-handle"></div>
-              <div class="modal-header">
-                <span class="modal-title">Nuevo ítem</span>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <button class="btn btn-primary btn-sm" onClick=${addItem}>
-                    Agregar</button
-                  ><button class="btn-icon" onClick=${() => setShowAdd(false)}>
-                    ✕
-                  </button>
-                </div>
-              </div>
-              <div class="modal-body">
-                <div class="field">
-                  <label class="label">Categoría</label
-                  ><select
-                    class="input"
-                    value=${newItem.cat}
-                    onChange=${(e) =>
-                      setNewItem((p) => ({ ...p, cat: e.target.value }))}
-                  >
-                    ${Object.keys(chk).map(
-                      (c) => html`<option value=${c}>${c}</option>`,
-                    )}
-                  </select>
-                </div>
-                <div class="field">
-                  <label class="label">Descripción</label
-                  ><input
-                    class="input"
-                    placeholder="Ej: Comprar adaptador europeo"
-                    value=${newItem.text}
-                    onInput=${(e) =>
-                      setNewItem((p) => ({ ...p, text: e.target.value }))}
-                  />
-                </div>
-                <div
-                  style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px;background:var(--card2);border-radius:10px"
-                >
-                  <button
-                    class=${"checkbox" + (newItem.urgent ? " checked" : "")}
-                    onClick=${() =>
-                      setNewItem((p) => ({ ...p, urgent: !p.urgent }))}
-                  >
-                    ${newItem.urgent ? "✓" : ""}
-                  </button>
-                  <div>
-                    <div style="font-size:13px;font-weight:600">
-                      Marcar como urgente
-                    </div>
-                    <div style="font-size:11px;color:var(--text3)">
-                      Aparece en alertas del Inicio
-                    </div>
-                  </div>
-                </div>
+          <span style="color:var(--text3)">${isOpen?'▲':'▼'}</span>
+        </button>
+        ${isOpen&&html`<div style="background:var(--card);border-radius:0 0 12px 12px;padding:0 14px;margin-top:1px">
+          ${filtered.map(i=>html`<div class="toggle-row" key=${i.id}>
+            <div style="display:flex;align-items:flex-start;gap:10px;flex:1">
+              <button class=${'checkbox'+(i.done?' checked':'')} onClick=${()=>toggle(cat,i.id)}>${i.done?'✓':''}</button>
+              <div style="flex:1">
+                <div style=${'font-size:13px;font-weight:500;'+(i.done?'text-decoration:line-through;color:var(--text3);':'')}>${i.text}</div>
+                ${i.urgent&&!i.done?html`<span class="badge badge-red" style="margin-top:3px">🚨 Urgente</span>`:''}
               </div>
             </div>
-          </div>`}
-        </div>`;
-      }
+            <button class="btn-icon" style="color:var(--red);margin-left:6px" onClick=${()=>delItem(cat,i.id)}>🗑️</button>
+          </div>`)}
+        </div>`}
+      </div>`;
+    })}
+    ${showAdd&&html`<div class="modal-overlay open" onClick=${e=>{if(e.target.classList.contains('modal-overlay'))setShowAdd(false)}}>
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-header"><span class="modal-title">Nuevo ítem</span><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-primary btn-sm" onClick=${addItem}>Agregar</button><button class="btn-icon" onClick=${()=>setShowAdd(false)}>✕</button></div></div>
+        <div class="modal-body">
+          <div class="field"><label class="label">Categoría</label><select class="input" value=${newItem.cat} onChange=${e=>setNewItem(p=>({...p,cat:e.target.value}))}>${Object.keys(chk).map(c=>html`<option value=${c}>${c}</option>`)}</select></div>
+          <div class="field"><label class="label">Descripción</label><input class="input" placeholder="Ej: Comprar adaptador europeo" value=${newItem.text} onInput=${e=>setNewItem(p=>({...p,text:e.target.value}))}/></div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px;background:var(--card2);border-radius:10px">
+            <button class=${'checkbox'+(newItem.urgent?' checked':'')} onClick=${()=>setNewItem(p=>({...p,urgent:!p.urgent}))}>${newItem.urgent?'✓':''}</button>
+            <div><div style="font-size:13px;font-weight:600">Marcar como urgente</div><div style="font-size:11px;color:var(--text3)">Aparece en alertas del Inicio</div></div>
+          </div>
+        </div>
+      </div>
+    </div>`}
+  </div>`;
+}
 
-      // ══════════════════ DOCS ══════════════════
-      function DocsTab({ docs, setDocs }) {
-        const [filter, setFilter] = useState("Todos");
-        const [showAdd, setShowAdd] = useState(false);
-        const [viewing, setViewing] = useState(null);
-        const [viewFile, setViewFile] = useState(null);
-        const [form, setForm] = useState({
-          title: "",
-          category: "Vuelos",
-          info: "",
-          icon: "📄",
-        });
-        const fileRef = useRef();
-        const cats = [
-          "Todos",
-          "Vuelos",
-          "Alojamiento",
-          "Seguros",
-          "Actividades",
-          "Emergencias",
-          "Embajadas",
-          "Pasaportes",
-          "Supermercados",
-          "Consejos",
-          "Otro",
-        ];
-        const filtered =
-          filter === "Todos" ? docs : docs.filter((d) => d.category === filter);
+// ══════════════════ DOCS ══════════════════
+function DocsTab({docs,setDocs}){
+  const[filter,setFilter]=useState('Todos');
+  const[showAdd,setShowAdd]=useState(false);
+  const[viewing,setViewing]=useState(null);
+  const[viewFile,setViewFile]=useState(null);
+  const[form,setForm]=useState({title:'',category:'Vuelos',info:'',icon:'📄'});
+  const fileRef=useRef();
+  const cats=['Todos','Vuelos','Alojamiento','Seguros','Actividades','Emergencias','Embajadas','Pasaportes','Supermercados','Consejos','Otro'];
+  const filtered=filter==='Todos'?docs:docs.filter(d=>d.category===filter);
 
-        const addDoc = () => {
-          if (!form.title) return;
-          setDocs((p) => [
-            ...p,
-            { ...form, id: "d" + Date.now(), type: "info" },
-          ]);
-          setShowAdd(false);
-          setForm({ title: "", category: "Vuelos", info: "", icon: "📄" });
-        };
-        const handleFile = async (e) => {
-          const files = e.target.files;
-          if (!files || !files.length) return;
-          for (const file of files) {
-            const reader = new FileReader();
-            reader.onload = async (ev) => {
-              const id =
-                "f" + Date.now() + Math.random().toString(36).substr(2, 5);
-              await dbSave({
-                id,
-                data: ev.target.result,
-                type: file.type,
-                name: file.name,
-              });
-              setDocs((p) => [
-                ...p,
-                {
-                  id,
-                  title: file.name,
-                  category: form.category || "Otro",
-                  type: file.type.startsWith("image/") ? "image" : "pdf",
-                  icon: file.type.startsWith("image/") ? "🖼️" : "📄",
-                  info: file.name,
-                  size: file.size,
-                  date: new Date().toLocaleDateString("es"),
-                },
-              ]);
-            };
-            reader.readAsDataURL(file);
-          }
-          setShowAdd(false);
-          e.target.value = "";
-        };
-        const viewDoc = async (doc) => {
-          if (doc.type === "info") {
-            setViewing(doc);
-            return;
-          }
-          const f = await dbGet(doc.id).catch(() => null);
-          if (f) setViewFile({ ...doc, data: f.data, mimeType: f.type });
-          else
-            alert(
-              "Archivo no encontrado. Puede haberse borrado al limpiar el caché del navegador.",
-            );
-        };
-        const delDoc = async (doc) => {
-          if (!confirm("¿Eliminar?")) return;
-          if (doc.type !== "info") await dbDel(doc.id).catch(() => {});
-          setDocs((p) => p.filter((d) => d.id !== doc.id));
-        };
-        const fmtSize = (b) => {
-          if (!b) return "";
-          return b < 1048576
-            ? (b / 1024).toFixed(1) + "KB"
-            : (b / 1048576).toFixed(1) + "MB";
-        };
+  const addDoc=()=>{if(!form.title)return;setDocs(p=>[...p,{...form,id:'d'+Date.now(),type:'info'}]);setShowAdd(false);setForm({title:'',category:'Vuelos',info:'',icon:'📄'})};
+  const handleFile=async e=>{
+    const files=e.target.files;if(!files||!files.length)return;
+    for(const file of files){
+      const reader=new FileReader();
+      reader.onload=async ev=>{
+        const id='f'+Date.now()+Math.random().toString(36).substr(2,5);
+        await dbSave({id,data:ev.target.result,type:file.type,name:file.name});
+        setDocs(p=>[...p,{id,title:file.name,category:form.category||'Otro',type:file.type.startsWith('image/')?'image':'pdf',icon:file.type.startsWith('image/')?'🖼️':'📄',info:file.name,size:file.size,date:new Date().toLocaleDateString('es')}]);
+      };reader.readAsDataURL(file);
+    }setShowAdd(false);e.target.value='';
+  };
+  const viewDoc=async doc=>{
+    if(doc.type==='info'){setViewing(doc);return}
+    const f=await dbGet(doc.id).catch(()=>null);
+    if(f)setViewFile({...doc,data:f.data,mimeType:f.type});
+    else alert('Archivo no encontrado. Puede haberse borrado al limpiar el caché del navegador.');
+  };
+  const delDoc=async doc=>{if(!confirm('¿Eliminar?'))return;if(doc.type!=='info')await dbDel(doc.id).catch(()=>{});setDocs(p=>p.filter(d=>d.id!==doc.id))};
+  const fmtSize=b=>{if(!b)return'';return b<1048576?(b/1024).toFixed(1)+'KB':(b/1048576).toFixed(1)+'MB'};
 
-        return html`<div>
-          <div class="page-header" style="padding-top:8px">
-            <div class="page-title">📁 Documentos</div>
-            <button
-              class="btn btn-primary btn-sm"
-              onClick=${() => setShowAdd(true)}
-            >
-              + Agregar
+  return html`<div>
+    <div class="page-header" style="padding-top:8px">
+      <div class="page-title">📁 Documentos</div>
+      <button class="btn btn-primary btn-sm" onClick=${()=>setShowAdd(true)}>+ Agregar</button>
+    </div>
+    <div style="padding:0 16px 8px;font-size:12px;color:var(--text3)">Reservas, códigos de vuelo, PDFs y fotos del viaje</div>
+    <div class="filter-row">${cats.map(c=>html`<button class=${'filter-chip'+(filter===c?' active':'')} onClick=${()=>setFilter(c)}>${c}</button>`)}</div>
+    <div style="padding:0 16px">
+      ${filtered.length===0?html`<div class="empty"><div class="empty-icon">📁</div><div>Sin documentos en esta categoría</div></div>`:
+      filtered.map(doc=>html`<div class="doc-row" key=${doc.id}>
+        <div class="doc-icon">${doc.icon||'📄'}</div>
+        <div style="flex:1;min-width:0;cursor:pointer" onClick=${()=>viewDoc(doc)}>
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px">${doc.title}</div>
+          <div style="font-size:11px;color:var(--text3)">${doc.category}${doc.size?' · '+fmtSize(doc.size):''}${doc.date?' · '+doc.date:''}</div>
+          ${doc.type==='info'&&doc.info?html`<div style="font-size:12px;color:var(--blue);margin-top:2px;font-weight:600;word-break:break-all;white-space:normal">${doc.info.length>80?doc.info.slice(0,80)+'…':doc.info}</div>`:''}
+        </div>
+        <button class="btn-icon" onClick=${()=>viewDoc(doc)}>👁️</button>
+        <button class="btn-icon" style="color:var(--red)" onClick=${()=>delDoc(doc)}>🗑️</button>
+      </div>`)}
+    </div>
+
+    ${showAdd&&html`<div class="modal-overlay open" onClick=${e=>{if(e.target.classList.contains('modal-overlay'))setShowAdd(false)}}>
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-header"><span class="modal-title">Agregar documento</span><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-primary btn-sm" onClick=${addDoc}>Guardar</button><button class="btn-icon" onClick=${()=>setShowAdd(false)}>✕</button></div></div>
+        <div class="modal-body">
+          <div class="field"><label class="label">Categoría</label><select class="input" value=${form.category} onChange=${e=>setForm(p=>({...p,category:e.target.value}))}>${cats.filter(c=>c!=='Todos').map(c=>html`<option value=${c}>${c}</option>`)}</select></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+            <button class="btn btn-ghost" style="padding:16px;border-radius:14px;flex-direction:column;gap:6px;display:flex;align-items:center;border:2px dashed var(--border)" onClick=${()=>fileRef.current.click()}>
+              <span style="font-size:28px">📎</span><span style="font-size:12px;font-weight:600">PDF o Foto</span><span style="font-size:10px;color:var(--text3)">Desde iPhone</span>
             </button>
+            <div style="padding:12px;border-radius:14px;border:1px solid var(--border);background:var(--card2);font-size:11px;color:var(--text3);display:flex;align-items:center;justify-content:center;text-align:center">O completar el formulario abajo para guardar un dato de texto</div>
           </div>
-          <div style="padding:0 16px 8px;font-size:12px;color:var(--text3)">
-            Reservas, códigos de vuelo, PDFs y fotos del viaje
-          </div>
-          <div class="filter-row">
-            ${cats.map(
-              (c) =>
-                html`<button
-                  class=${"filter-chip" + (filter === c ? " active" : "")}
-                  onClick=${() => setFilter(c)}
-                >
-                  ${c}
-                </button>`,
-            )}
-          </div>
-          <div style="padding:0 16px">
-            ${filtered.length === 0
-              ? html`<div class="empty">
-                  <div class="empty-icon">📁</div>
-                  <div>Sin documentos en esta categoría</div>
-                </div>`
-              : filtered.map(
-                  (doc) =>
-                    html`<div class="doc-row" key=${doc.id}>
-                      <div class="doc-icon">${doc.icon || "📄"}</div>
-                      <div
-                        style="flex:1;min-width:0;cursor:pointer"
-                        onClick=${() => viewDoc(doc)}
-                      >
-                        <div
-                          style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px"
-                        >
-                          ${doc.title}
-                        </div>
-                        <div style="font-size:11px;color:var(--text3)">
-                          ${doc.category}${doc.size
-                            ? " · " + fmtSize(doc.size)
-                            : ""}${doc.date ? " · " + doc.date : ""}
-                        </div>
-                        ${doc.type === "info" && doc.info
-                          ? html`<div
-                              style="font-size:12px;color:var(--blue);margin-top:2px;font-weight:600;word-break:break-all;white-space:normal"
-                            >
-                              ${doc.info.length > 80
-                                ? doc.info.slice(0, 80) + "…"
-                                : doc.info}
-                            </div>`
-                          : ""}
-                      </div>
-                      <button class="btn-icon" onClick=${() => viewDoc(doc)}>
-                        👁️
-                      </button>
-                      <button
-                        class="btn-icon"
-                        style="color:var(--red)"
-                        onClick=${() => delDoc(doc)}
-                      >
-                        🗑️
-                      </button>
-                    </div>`,
-                )}
-          </div>
+          <div class="field"><label class="label">Título</label><input class="input" placeholder="Ej: Reserva Hotel Praga" value=${form.title} onInput=${e=>setForm(p=>({...p,title:e.target.value}))}/></div>
+          <div class="field"><label class="label">Dato / Código / Número</label><textarea class="input" placeholder="Número de reserva, código, teléfono, dirección..." value=${form.info} onInput=${e=>setForm(p=>({...p,info:e.target.value}))}></textarea></div>
+          <div class="field"><label class="label">Ícono (emoji)</label><input class="input" value=${form.icon} onInput=${e=>setForm(p=>({...p,icon:e.target.value}))}/></div>
+          <input ref=${fileRef} type="file" accept="image/*,application/pdf" multiple style="display:none" onChange=${handleFile}/>
+        </div>
+      </div>
+    </div>`}
 
-          ${showAdd &&
-          html`<div
-            class="modal-overlay open"
-            onClick=${(e) => {
-              if (e.target.classList.contains("modal-overlay"))
-                setShowAdd(false);
-            }}
-          >
-            <div class="modal">
-              <div class="modal-handle"></div>
-              <div class="modal-header">
-                <span class="modal-title">Agregar documento</span>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <button class="btn btn-primary btn-sm" onClick=${addDoc}>
-                    Guardar</button
-                  ><button class="btn-icon" onClick=${() => setShowAdd(false)}>
-                    ✕
-                  </button>
-                </div>
-              </div>
-              <div class="modal-body">
-                <div class="field">
-                  <label class="label">Categoría</label
-                  ><select
-                    class="input"
-                    value=${form.category}
-                    onChange=${(e) =>
-                      setForm((p) => ({ ...p, category: e.target.value }))}
-                  >
-                    ${cats
-                      .filter((c) => c !== "Todos")
-                      .map((c) => html`<option value=${c}>${c}</option>`)}
-                  </select>
-                </div>
-                <div
-                  style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px"
-                >
-                  <button
-                    class="btn btn-ghost"
-                    style="padding:16px;border-radius:14px;flex-direction:column;gap:6px;display:flex;align-items:center;border:2px dashed var(--border)"
-                    onClick=${() => fileRef.current.click()}
-                  >
-                    <span style="font-size:28px">📎</span
-                    ><span style="font-size:12px;font-weight:600"
-                      >PDF o Foto</span
-                    ><span style="font-size:10px;color:var(--text3)"
-                      >Desde iPhone</span
-                    >
-                  </button>
-                  <div
-                    style="padding:12px;border-radius:14px;border:1px solid var(--border);background:var(--card2);font-size:11px;color:var(--text3);display:flex;align-items:center;justify-content:center;text-align:center"
-                  >
-                    O completar el formulario abajo para guardar un dato de
-                    texto
-                  </div>
-                </div>
-                <div class="field">
-                  <label class="label">Título</label
-                  ><input
-                    class="input"
-                    placeholder="Ej: Reserva Hotel Praga"
-                    value=${form.title}
-                    onInput=${(e) =>
-                      setForm((p) => ({ ...p, title: e.target.value }))}
-                  />
-                </div>
-                <div class="field">
-                  <label class="label">Dato / Código / Número</label
-                  ><textarea
-                    class="input"
-                    placeholder="Número de reserva, código, teléfono, dirección..."
-                    value=${form.info}
-                    onInput=${(e) =>
-                      setForm((p) => ({ ...p, info: e.target.value }))}
-                  ></textarea>
-                </div>
-                <div class="field">
-                  <label class="label">Ícono (emoji)</label
-                  ><input
-                    class="input"
-                    value=${form.icon}
-                    onInput=${(e) =>
-                      setForm((p) => ({ ...p, icon: e.target.value }))}
-                  />
-                </div>
-                <input
-                  ref=${fileRef}
-                  type="file"
-                  accept="image/*,application/pdf"
-                  multiple
-                  style="display:none"
-                  onChange=${handleFile}
-                />
-              </div>
-            </div>
-          </div>`}
-          ${viewing &&
-          html`<div
-            class="modal-overlay open"
-            onClick=${(e) => {
-              if (e.target.classList.contains("modal-overlay"))
-                setViewing(null);
-            }}
-          >
-            <div class="modal">
-              <div class="modal-handle"></div>
-              <div class="modal-header">
-                <span class="modal-title">${viewing.icon} ${viewing.title}</span
-                ><button class="btn-icon" onClick=${() => setViewing(null)}>
-                  ✕
-                </button>
-              </div>
-              <div class="modal-body" style="padding-bottom:20px">
-                <div
-                  style="background:var(--card2);border-radius:12px;padding:14px;margin-bottom:10px"
-                >
-                  <div style="font-size:11px;color:var(--text3)">Categoría</div>
-                  <div style="font-size:14px;font-weight:600">
-                    ${viewing.category}
-                  </div>
-                </div>
-                ${viewing.info &&
-                html`<div
-                  style="background:var(--card2);border-radius:12px;padding:14px"
-                >
-                  <div
-                    style="font-size:11px;color:var(--text3);margin-bottom:6px"
-                  >
-                    Información
-                  </div>
-                  <div
-                    style="font-size:16px;font-weight:700;color:var(--blue);word-break:break-all;line-height:1.5"
-                  >
-                    ${viewing.info}
-                  </div>
-                </div>`}
-              </div>
-            </div>
-          </div>`}
-          ${viewFile &&
-          html`<div
-            class="modal-overlay open"
-            onClick=${(e) => {
-              if (e.target.classList.contains("modal-overlay"))
-                setViewFile(null);
-            }}
-          >
-            <div class="modal" style="max-height:95vh">
-              <div class="modal-handle"></div>
-              <div class="modal-header">
-                <span class="modal-title">${viewFile.title}</span
-                ><button class="btn-icon" onClick=${() => setViewFile(null)}>
-                  ✕
-                </button>
-              </div>
-              <div class="modal-body" style="padding-bottom:20px">
-                ${viewFile.type === "image"
-                  ? html`<img
-                      src=${viewFile.data}
-                      alt=${viewFile.title}
-                      style="width:100%;border-radius:12px;max-height:60vh;object-fit:contain"
-                    />`
-                  : html`<div style="text-align:center;padding:20px">
-                      <div style="font-size:64px;margin-bottom:12px">📄</div>
-                      <div
-                        style="font-size:15px;font-weight:600;margin-bottom:16px"
-                      >
-                        ${viewFile.title}
-                      </div>
-                      <a
-                        href=${viewFile.data}
-                        download=${viewFile.title}
-                        target="_blank"
-                        style="display:inline-block;padding:12px 24px;background:var(--blue);color:#fff;border-radius:12px;text-decoration:none;font-weight:600"
-                        >📥 Abrir / Descargar PDF</a
-                      >
-                    </div>`}
-              </div>
-            </div>
-          </div>`}
-        </div>`;
-      }
+    ${viewing&&html`<div class="modal-overlay open" onClick=${e=>{if(e.target.classList.contains('modal-overlay'))setViewing(null)}}>
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-header"><span class="modal-title">${viewing.icon} ${viewing.title}</span><button class="btn-icon" onClick=${()=>setViewing(null)}>✕</button></div>
+        <div class="modal-body" style="padding-bottom:20px">
+          <div style="background:var(--card2);border-radius:12px;padding:14px;margin-bottom:10px"><div style="font-size:11px;color:var(--text3)">Categoría</div><div style="font-size:14px;font-weight:600">${viewing.category}</div></div>
+          ${viewing.info&&html`<div style="background:var(--card2);border-radius:12px;padding:14px"><div style="font-size:11px;color:var(--text3);margin-bottom:6px">Información</div><div style="font-size:16px;font-weight:700;color:var(--blue);word-break:break-all;line-height:1.5">${viewing.info}</div></div>`}
+        </div>
+      </div>
+    </div>`}
 
-      render(html`<${App} />`, document.getElementById("app"));
-    </script>
-  </body>
+    ${viewFile&&html`<div class="modal-overlay open" onClick=${e=>{if(e.target.classList.contains('modal-overlay'))setViewFile(null)}}>
+      <div class="modal" style="max-height:95vh">
+        <div class="modal-handle"></div>
+        <div class="modal-header"><span class="modal-title">${viewFile.title}</span><button class="btn-icon" onClick=${()=>setViewFile(null)}>✕</button></div>
+        <div class="modal-body" style="padding-bottom:20px">
+          ${viewFile.type==='image'?html`<img src=${viewFile.data} alt=${viewFile.title} style="width:100%;border-radius:12px;max-height:60vh;object-fit:contain"/>`:
+          html`<div style="text-align:center;padding:20px"><div style="font-size:64px;margin-bottom:12px">📄</div><div style="font-size:15px;font-weight:600;margin-bottom:16px">${viewFile.title}</div><a href=${viewFile.data} download=${viewFile.title} target="_blank" style="display:inline-block;padding:12px 24px;background:var(--blue);color:#fff;border-radius:12px;text-decoration:none;font-weight:600">📥 Abrir / Descargar PDF</a></div>`}
+        </div>
+      </div>
+    </div>`}
+  </div>`;
+}
+
+render(html`<${App}/>`,document.getElementById('app'));
+</script>
+</body>
 </html>

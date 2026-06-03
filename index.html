@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Europa 🌍">
 <meta name="theme-color" content="#0F172A">
 <link rel="manifest" href="manifest.json">
-<title>Viaje Europa 2026</title>
+<title>Planea tu viaje</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -270,7 +270,7 @@ async function dbGet(id){const db=await openDB();return new Promise((r,j)=>{cons
 async function dbDel(id){const db=await openDB();return new Promise((r,j)=>{const t=db.transaction('files','readwrite');t.objectStore('files').delete(id);t.oncomplete=r;t.onerror=()=>j(t.error)})}
 
 // ══════════════════ HELPERS ══════════════════
-const fmt=(n,cur,rate,rateUSD)=>{if(!n&&n!==0)return'—';const v=parseFloat(n)||0;if(cur==='EUR')return`€${v.toLocaleString('es',{maximumFractionDigits:0})}`;if(cur==='USD')return`US$${(v*(rateUSD||1.08)).toLocaleString('es',{maximumFractionDigits:0})}`;return`$${(v*rate).toLocaleString('es',{maximumFractionDigits:0})}`};
+const fmt=(n,cur,rate,rateUSD,extraRates)=>{if(!n&&n!==0)return'—';const v=parseFloat(n)||0;if(cur==='EUR')return`€${v.toLocaleString('es',{maximumFractionDigits:0})}`;if(cur==='USD')return`US$${(v*(rateUSD||1.08)).toLocaleString('es',{maximumFractionDigits:0})}`;if(cur!=='COP'&&extraRates&&extraRates[cur])return`${cur} ${(v/extraRates[cur]).toLocaleString('es',{maximumFractionDigits:2})}`;return`$${(v*rate).toLocaleString('es',{maximumFractionDigits:0})}`};
 const daysUntil=d=>Math.ceil((new Date(d)-new Date())/(864e5));
 const budgetTotal=b=>(b.accom||0)+(b.transport||0)+(b.food||0)+(b.activities||0)+(b.misc||0);
 
@@ -318,14 +318,22 @@ function App(){
     setDocs(INIT_DOCS);
     setRate(5000);
     setRateUSD(1.08);
-    ['itin_f1','exp_f1','bud_f1','chk_f1','doc_f1','rate_f1','rateUSD_f1'].forEach(k=>localStorage.removeItem(k));
+    setSavings([]);
+    setSavingsGoal(0);
+    setExtraRates({});
+    ['itin_f1','exp_f1','bud_f1','chk_f1','doc_f1','rate_f1','rateUSD_f1','savings_f1','savingsGoal_f1','extraRates_f1'].forEach(k=>localStorage.removeItem(k));
     // Limpiar archivos de IndexedDB
     openDB().then(db=>{const t=db.transaction('files','readwrite');t.objectStore('files').clear()}).catch(()=>{});
     alert('✅ App reseteada. Empezá tu nuevo viaje.');
   },[]);
 
+  const[savings,setSavings]=useState(()=>LS.get('savings_f1',[]));
+  const[savingsGoal,setSavingsGoal]=useState(()=>LS.get('savingsGoal_f1',0));
+  const[extraRates,setExtraRates]=useState(()=>LS.get('extraRates_f1',{}));
+  useEffect(()=>LS.set('savings_f1',savings),[savings]);
+  useEffect(()=>LS.set('savingsGoal_f1',savingsGoal),[savingsGoal]);
+  useEffect(()=>LS.set('extraRates_f1',extraRates),[extraRates]);
   const totalExp=useMemo(()=>exp.reduce((s,e)=>{const v=parseFloat(e.amount)||0;return s+(e.currency==='EUR'?v:v/rate)},0),[exp,rate]);
-  const totalBud=useMemo(()=>Object.values(bud).reduce((s,b)=>s+budgetTotal(b),0),[bud]);
   const urgentN=useMemo(()=>{let n=0;Object.values(chk).forEach(c=>c.forEach(i=>{if(i.urgent&&!i.done)n++}));return n;},[chk]);
 
   const TABS=[
@@ -333,16 +341,18 @@ function App(){
     {id:'itin',lb:'Ruta',ic:html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`},
     {id:'exp', lb:'Gastos',ic:html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>`},
     {id:'bud', lb:'Presup.',ic:html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>`},
+    {id:'sav', lb:'Ahorros',ic:html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>`},
     {id:'chk', lb:'Checklist',ic:html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`},
     {id:'docs',lb:'Docs',ic:html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>`},
   ];
 
   return html`<div style="height:100%;display:flex;flex-direction:column">
     <div class="screen">
-      ${tab==='home'&&html`<${HomeTab} itin=${itin} totalExp=${totalExp} totalBud=${totalBud} urgentN=${urgentN} cur=${cur} setCur=${setCur} rate=${rate} setRate=${setRate} fetchRate=${fetchRate} rl=${rl} rateUSD=${rateUSD} setRateUSD=${setRateUSD} fetchRateUSD=${fetchRateUSD} rlUSD=${rlUSD} resetApp=${resetApp}/>`}
-      ${tab==='itin'&&html`<${ItinTab} itin=${itin} setItin=${setItin} cur=${cur} rate=${rate} rateUSD=${rateUSD}/>`}
-      ${tab==='exp'&&html`<${ExpTab} exp=${exp} setExp=${setExp} itin=${itin} cur=${cur} rate=${rate} rateUSD=${rateUSD}/>`}
-      ${tab==='bud'&&html`<${BudTab} bud=${bud} setBud=${setBud} exp=${exp} itin=${itin} cur=${cur} rate=${rate} rateUSD=${rateUSD}/>`}
+      ${tab==='home'&&html`<${HomeTab} itin=${itin} totalExp=${totalExp} totalBud=${totalBud} urgentN=${urgentN} cur=${cur} setCur=${setCur} rate=${rate} setRate=${setRate} fetchRate=${fetchRate} rl=${rl} rateUSD=${rateUSD} setRateUSD=${setRateUSD} fetchRateUSD=${fetchRateUSD} rlUSD=${rlUSD} resetApp=${resetApp} extraRates=${extraRates} setExtraRates=${setExtraRates}/>`}
+      ${tab==='itin'&&html`<${ItinTab} itin=${itin} setItin=${setItin} cur=${cur} rate=${rate} rateUSD=${rateUSD} extraRates=${extraRates}/>`}
+      ${tab==='exp'&&html`<${ExpTab} exp=${exp} setExp=${setExp} itin=${itin} cur=${cur} rate=${rate} rateUSD=${rateUSD} extraRates=${extraRates}/>`}
+      ${tab==='bud'&&html`<${BudTab} bud=${bud} setBud=${setBud} exp=${exp} itin=${itin} cur=${cur} rate=${rate} rateUSD=${rateUSD} extraRates=${extraRates}/>`}
+      ${tab==='sav'&&html`<${SavingsTab} savings=${savings} setSavings=${setSavings} savingsGoal=${savingsGoal} setSavingsGoal=${setSavingsGoal} cur=${cur} rate=${rate} rateUSD=${rateUSD} extraRates=${extraRates}/>`}
       ${tab==='chk'&&html`<${ChkTab} chk=${chk} setChk=${setChk}/>`}
       ${tab==='docs'&&html`<${DocsTab} docs=${docs} setDocs=${setDocs}/>`}
     </div>
@@ -353,24 +363,71 @@ function App(){
 }
 
 // ══════════════════ HOME ══════════════════
-function HomeTab({itin,totalExp,totalBud,urgentN,cur,setCur,rate,fetchRate,rl,setRate,rateUSD,setRateUSD,fetchRateUSD,rlUSD,resetApp}){
+function HomeTab({itin,totalExp,totalBud,urgentN,cur,setCur,rate,fetchRate,rl,setRate,rateUSD,setRateUSD,fetchRateUSD,rlUSD,resetApp,extraRates,setExtraRates}){
   const days=daysUntil('2026-12-15');
   const pct=totalBud>0?Math.min(100,(totalExp/totalBud)*100):0;
   const[editRate,setEditRate]=useState(false);
   const[rateInput,setRateInput]=useState(String(rate));
   const saveRate=()=>{const v=parseInt(rateInput.replace(/\D/g,''));if(v>0){setRate(v);setEditRate(false)}};
   const[editRateUSD,setEditRateUSD]=useState(false);
-  const[rateUSDInput,setRateUSDInput]=useState(String(rateUSD));
-  const saveRateUSD=()=>{const v=parseFloat(rateUSDInput);if(v>0){setRateUSD(parseFloat(v.toFixed(4)));setEditRateUSD(false)}};
+  const[rateUSDInput,setRateUSDInput]=useState(String(Math.round(rate/(rateUSD||1.08))));
+  const saveRateUSD=()=>{const v=parseInt(rateUSDInput.replace(/\D/g,''));if(v>0){setRateUSD(rate/v);setEditRateUSD(false)}};
+  const[extraRateEdit,setExtraRateEdit]=useState(false);
+  const[extraRateInput,setExtraRateInput]=useState('');
+  const saveExtraRate=()=>{const v=parseInt(extraRateInput.replace(/\D/g,''));if(v>0){setExtraRates(p=>({...p,[cur]:v}));setExtraRateEdit(false)}};
+  const[showAddCur,setShowAddCur]=useState(false);
+  const[newCurName,setNewCurName]=useState('');
+  const[newCurRate,setNewCurRate]=useState('');
+  const addExtraCur=()=>{
+    const name=newCurName.trim().toUpperCase();
+    const v=parseInt(newCurRate.replace(/\D/g,''));
+    if(!name||!v)return;
+    setExtraRates(p=>({...p,[name]:v}));
+    setCur(name);
+    setNewCurName('');setNewCurRate('');setShowAddCur(false);
+  };
+  const delExtraCur=(name)=>{
+    setExtraRates(p=>{const n={...p};delete n[name];return n});
+    if(cur===name)setCur('COP');
+  };
+  const extraKeys=Object.keys(extraRates);
   return html`<div>
     <div class="page-header" style="padding-top:8px">
       <div><div style="font-size:13px;color:var(--text3)">Europa 2026-27 🌍</div><div class="page-title">¡Hola, Alejandro!</div></div>
-      <div class="cur-toggle">
-        <button class=${'cur-btn'+(cur==='EUR'?' active':'')} onClick=${()=>setCur('EUR')}>EUR</button>
-        <button class=${'cur-btn'+(cur==='USD'?' active':'')} onClick=${()=>setCur('USD')}>USD</button>
-        <button class=${'cur-btn'+(cur==='COP'?' active':'')} onClick=${()=>setCur('COP')}>COP</button>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div class="cur-toggle">
+          <button class=${'cur-btn'+(cur==='EUR'?' active':'')} onClick=${()=>setCur('EUR')}>EUR</button>
+          <button class=${'cur-btn'+(cur==='USD'?' active':'')} onClick=${()=>setCur('USD')}>USD</button>
+          <button class=${'cur-btn'+(cur==='COP'?' active':'')} onClick=${()=>setCur('COP')}>COP</button>
+          ${extraKeys.map(k=>html`<button class=${'cur-btn'+(cur===k?' active':'')} onClick=${()=>setCur(k)}>${k}</button>`)}
+          <button class="cur-btn" onClick=${()=>setShowAddCur(true)} title="Agregar moneda">+</button>
+        </div>
       </div>
     </div>
+
+    ${showAddCur&&html`
+      <div class="card" style="margin-bottom:8px;border:1px solid var(--blue)">
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px">➕ Agregar moneda</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input class="input" placeholder="Ej: GBP" value=${newCurName} onInput=${e=>setNewCurName(e.target.value)} style="width:80px;text-transform:uppercase"/>
+          <input class="input" placeholder="COP por 1 unidad (ej: 6500)" type="number" value=${newCurRate} onInput=${e=>setNewCurRate(e.target.value)} style="flex:1"/>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm" style="flex:1" onClick=${addExtraCur}>Agregar</button>
+          <button class="btn btn-ghost btn-sm" onClick=${()=>setShowAddCur(false)}>Cancelar</button>
+        </div>
+        ${extraKeys.length>0&&html`
+          <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Monedas extra guardadas:</div>
+            ${extraKeys.map(k=>html`
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0">
+                <span style="font-size:13px;font-weight:600">${k} = ${extraRates[k].toLocaleString('es')} COP</span>
+                <button class="btn btn-ghost btn-sm" style="color:var(--red);padding:2px 8px" onClick=${()=>delExtraCur(k)}>✕</button>
+              </div>`)}
+          </div>
+        `}
+      </div>
+    `}
 
     <div class="countdown">
       <div class="cd-days">${days>0?days:0}</div>
@@ -396,51 +453,79 @@ function HomeTab({itin,totalExp,totalBud,urgentN,cur,setCur,rate,fetchRate,rl,se
     </div>
 
     <div class="card">
-      <div style="font-size:14px;font-weight:700;margin-bottom:10px">💱 Tasa EUR → COP</div>
-      ${editRate?html`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:14px;font-weight:700">💱 Tasa de cambio</div>
+        <div style="font-size:11px;color:var(--text3)">Base: COP</div>
+      </div>
+      ${cur==='COP'?html`
+        <div style="padding:12px;background:var(--card2);border-radius:10px;font-size:13px;color:var(--text3);text-align:center">
+          Estás viendo los valores en <strong style="color:var(--blue)">Pesos colombianos (COP)</strong>.<br/>Seleccioná EUR, USD u otra moneda para ver la conversión desde COP.
+        </div>
+      `:''}
+      ${cur==='EUR'?html`
         <div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:8px">Escribí el valor manual de 1 EUR en COP:</div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input class="input" type="number" value=${rateInput} onInput=${e=>setRateInput(e.target.value)} placeholder="5000" style="font-size:18px;font-weight:800;flex:1"/>
-            <button class="btn btn-primary btn-sm" onClick=${saveRate}>✓</button>
-            <button class="btn btn-ghost btn-sm" onClick=${()=>setEditRate(false)}>✕</button>
-          </div>
+          ${editRate?html`
+            <div style="font-size:12px;color:var(--text3);margin-bottom:8px">¿Cuántos COP vale 1 EUR? (manual)</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input class="input" type="number" value=${rateInput} onInput=${e=>setRateInput(e.target.value)} placeholder="5000" style="font-size:18px;font-weight:800;flex:1"/>
+              <button class="btn btn-primary btn-sm" onClick=${saveRate}>✓</button>
+              <button class="btn btn-ghost btn-sm" onClick=${()=>setEditRate(false)}>✕</button>
+            </div>
+          `:html`
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-size:11px;color:var(--text3);margin-bottom:2px">1 EUR equivale a</div>
+                <div style="font-size:24px;font-weight:800;color:var(--blue)">$ ${rate.toLocaleString('es')} COP</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+                <button class="btn btn-ghost btn-sm" onClick=${fetchRate} disabled=${rl}>${rl?'⏳':'🔄'} Auto</button>
+                <button class="btn btn-ghost btn-sm" onClick=${()=>{setRateInput(String(rate));setEditRate(true)}}>✏️ Manual</button>
+              </div>
+            </div>
+          `}
         </div>
-      `:html`
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div>
-            <div style="font-size:22px;font-weight:800;color:var(--blue)">1 EUR = ${rate.toLocaleString('es')} COP</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px">Banco Central Europeo</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
-            <button class="btn btn-ghost btn-sm" onClick=${fetchRate} disabled=${rl}>${rl?'⏳':'🔄'} Auto</button>
-            <button class="btn btn-ghost btn-sm" onClick=${()=>{setRateInput(String(rate));setEditRate(true)}}>✏️ Manual</button>
-          </div>
-        </div>
-      `}
-    </div>
-
-    <div class="card">
-      <div style="font-size:14px;font-weight:700;margin-bottom:10px">💵 Tasa EUR → USD</div>
-      ${editRateUSD?html`
+      `:''}
+      ${cur==='USD'?html`
         <div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:8px">Escribí el valor manual de 1 EUR en USD:</div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input class="input" type="number" step="0.0001" value=${rateUSDInput} onInput=${e=>setRateUSDInput(e.target.value)} placeholder="1.08" style="font-size:18px;font-weight:800;flex:1"/>
-            <button class="btn btn-primary btn-sm" onClick=${saveRateUSD}>✓</button>
-            <button class="btn btn-ghost btn-sm" onClick=${()=>setEditRateUSD(false)}>✕</button>
-          </div>
+          ${editRateUSD?html`
+            <div style="font-size:12px;color:var(--text3);margin-bottom:8px">¿Cuántos COP vale 1 USD? (manual)</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input class="input" type="number" value=${rateUSDInput} onInput=${e=>setRateUSDInput(e.target.value)} placeholder="4200" style="font-size:18px;font-weight:800;flex:1"/>
+              <button class="btn btn-primary btn-sm" onClick=${saveRateUSD}>✓</button>
+              <button class="btn btn-ghost btn-sm" onClick=${()=>setEditRateUSD(false)}>✕</button>
+            </div>
+          `:html`
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-size:11px;color:var(--text3);margin-bottom:2px">1 USD equivale a</div>
+                <div style="font-size:24px;font-weight:800;color:var(--green)">$ ${Math.round(rate/rateUSD).toLocaleString('es')} COP</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+                <button class="btn btn-ghost btn-sm" onClick=${fetchRateUSD} disabled=${rlUSD}>${rlUSD?'⏳':'🔄'} Auto</button>
+                <button class="btn btn-ghost btn-sm" onClick=${()=>{setRateUSDInput(String(Math.round(rate/rateUSD)));setEditRateUSD(true)}}>✏️ Manual</button>
+              </div>
+            </div>
+          `}
         </div>
-      `:html`
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div>
-            <div style="font-size:22px;font-weight:800;color:var(--green)">1 EUR = ${parseFloat(rateUSD).toFixed(4)} USD</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px">Banco Central Europeo</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
-            <button class="btn btn-ghost btn-sm" onClick=${fetchRateUSD} disabled=${rlUSD}>${rlUSD?'⏳':'🔄'} Auto</button>
-            <button class="btn btn-ghost btn-sm" onClick=${()=>{setRateUSDInput(String(rateUSD));setEditRateUSD(true)}}>✏️ Manual</button>
-          </div>
+      `:''}
+      ${(cur!=='EUR'&&cur!=='USD'&&cur!=='COP')&&html`
+        <div>
+          ${extraRateEdit?html`
+            <div style="font-size:12px;color:var(--text3);margin-bottom:8px">¿Cuántos COP vale 1 ${cur}? (manual)</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input class="input" type="number" value=${extraRateInput} onInput=${e=>setExtraRateInput(e.target.value)} placeholder="1000" style="font-size:18px;font-weight:800;flex:1"/>
+              <button class="btn btn-primary btn-sm" onClick=${saveExtraRate}>✓</button>
+              <button class="btn btn-ghost btn-sm" onClick=${()=>setExtraRateEdit(false)}>✕</button>
+            </div>
+          `:html`
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-size:11px;color:var(--text3);margin-bottom:2px">1 ${cur} equivale a</div>
+                <div style="font-size:24px;font-weight:800;color:var(--amber)">$ ${((extraRates[cur])||0).toLocaleString('es')} COP</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onClick=${()=>{setExtraRateInput(String(extraRates[cur]||''));setExtraRateEdit(true)}}>✏️ Manual</button>
+            </div>
+          `}
         </div>
       `}
     </div>
@@ -721,6 +806,117 @@ function BudTab({bud,setBud,exp,itin,cur,rate,rateUSD}){
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>`}
+  </div>`;
+}
+
+// ══════════════════ SAVINGS ══════════════════
+function SavingsTab({savings,setSavings,savingsGoal,setSavingsGoal,cur,rate,rateUSD,extraRates}){
+  const[showAdd,setShowAdd]=useState(false);
+  const[editGoal,setEditGoal]=useState(false);
+  const[goalInput,setGoalInput]=useState(String(savingsGoal));
+  const[form,setForm]=useState({name:'',amount:'',note:''});
+  const upd=(k,v)=>setForm(p=>({...p,[k]:v}));
+
+  // Todo en COP internamente
+  const totalSaved=savings.reduce((s,a)=>s+(parseFloat(a.amount)||0),0);
+  const pct=savingsGoal>0?Math.min(100,(totalSaved/savingsGoal)*100):0;
+  const falta=Math.max(0,savingsGoal-totalSaved);
+
+  const saveGoal=()=>{const v=parseInt(goalInput.replace(/\D/g,''));if(v>=0){setSavingsGoal(v);setEditGoal(false)}};
+  const addAccount=()=>{if(!form.name||!form.amount)return;setSavings(p=>[...p,{id:Date.now(),...form,amount:parseFloat(form.amount)||0}]);setForm({name:'',amount:'',note:''});setShowAdd(false)};
+  const del=id=>{if(confirm('¿Eliminar esta cuenta?'))setSavings(p=>p.filter(a=>a.id!==id))};
+
+  // Convertir COP a moneda activa
+  const fmtCOP=(cop)=>fmt(cop/rate,cur,rate,rateUSD,extraRates);
+
+  return html`<div>
+    <div class="page-header" style="padding-top:8px">
+      <div class="page-title">💰 Ahorros</div>
+      <button class="btn btn-primary btn-sm" onClick=${()=>setShowAdd(true)}>+ Cuenta</button>
+    </div>
+
+    <!-- Resumen principal -->
+    <div class="card" style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:2px">Total ahorrado</div>
+          <div style="font-size:26px;font-weight:900;color:var(--green)">${fmtCOP(totalSaved)}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">= $${totalSaved.toLocaleString('es')} COP</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:2px">Meta</div>
+          ${editGoal?html`
+            <div style="display:flex;gap:6px;align-items:center">
+              <input class="input" type="number" value=${goalInput} onInput=${e=>setGoalInput(e.target.value)} placeholder="ej: 20000000" style="width:130px;font-size:13px"/>
+              <button class="btn btn-primary btn-sm" onClick=${saveGoal}>✓</button>
+              <button class="btn btn-ghost btn-sm" onClick=${()=>setEditGoal(false)}>✕</button>
+            </div>
+          `:html`
+            <div style="display:flex;align-items:center;gap:6px">
+              <div>
+                <div style="font-size:16px;font-weight:800;color:var(--blue)">${fmtCOP(savingsGoal)}</div>
+                <div style="font-size:10px;color:var(--text3)">= $${savingsGoal.toLocaleString('es')} COP</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onClick=${()=>{setGoalInput(String(savingsGoal));setEditGoal(true)}}>✏️</button>
+            </div>
+          `}
+        </div>
+      </div>
+      <div class="progress-bar" style="height:10px"><div class="progress-fill" style=${'width:'+pct+'%;background:'+(pct>=100?'var(--green)':pct>=60?'var(--amber)':'var(--red)')}></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px">
+        <span style="color:var(--text3)">${pct.toFixed(1)}% de la meta</span>
+        ${falta>0?html`<span style="color:var(--red);font-weight:700">Faltan: ${fmtCOP(falta)}</span>`:html`<span style="color:var(--green);font-weight:700">✅ Meta alcanzada</span>`}
+      </div>
+    </div>
+
+    <!-- Cuentas -->
+    <div class="section-title">Mis cuentas</div>
+    ${savings.length===0?html`
+      <div style="text-align:center;padding:32px 16px;color:var(--text3)">
+        <div style="font-size:36px;margin-bottom:8px">🏦</div>
+        <div style="font-size:14px">Todavía no agregaste cuentas.</div>
+        <div style="font-size:12px;margin-top:4px">Tocá "+ Cuenta" para empezar.</div>
+      </div>
+    `:''}
+    ${savings.map(a=>html`
+      <div class="card" key=${a.id} style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700">${a.name}</div>
+            ${a.note?html`<div style="font-size:11px;color:var(--text3);margin-top:2px">${a.note}</div>`:''}
+          </div>
+          <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+            <div style="font-size:17px;font-weight:800;color:var(--green)">${fmtCOP(a.amount)}</div>
+            <div style="font-size:10px;color:var(--text3)">$${(parseFloat(a.amount)||0).toLocaleString('es')} COP</div>
+            <button class="btn btn-ghost btn-sm" style="color:var(--red);padding:2px 8px;font-size:11px" onClick=${()=>del(a.id)}>✕ Eliminar</button>
+          </div>
+        </div>
+        <div class="progress-bar" style="margin-top:8px">
+          <div class="progress-fill" style=${'width:'+Math.min(100,savingsGoal>0?((parseFloat(a.amount)||0)/savingsGoal*100):0)+'%;background:var(--green)'}></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">${savingsGoal>0?((parseFloat(a.amount)||0)/savingsGoal*100).toFixed(1):'—'}% del total meta</div>
+      </div>
+    `)}
+
+    <!-- Modal agregar cuenta -->
+    ${showAdd&&html`<div class="modal-overlay open" onClick=${e=>{if(e.target.classList.contains('modal-overlay'))setShowAdd(false)}}>
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-header"><span class="modal-title">Nueva cuenta</span><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-primary btn-sm" onClick=${addAccount}>Guardar</button><button class="btn-icon" onClick=${()=>setShowAdd(false)}>✕</button></div></div>
+        <div class="modal-body">
+          <div class="field"><label class="label">Nombre de la cuenta</label><input class="input" placeholder="Ej: Bancolombia Débito, Tarjeta Visa, Efectivo..." value=${form.name} onInput=${e=>upd('name',e.target.value)}/></div>
+          <div class="field">
+            <label class="label">Monto disponible (en COP)</label>
+            <div style="position:relative">
+              <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;font-weight:700;pointer-events:none">$</span>
+              <input class="input" style="padding-left:22px" type="number" step="1000" min="0" placeholder="Ej: 3000000" value=${form.amount} onInput=${e=>upd('amount',e.target.value)}/>
+            </div>
+            ${form.amount&&parseFloat(form.amount)>0?html`<div style="font-size:11px;color:var(--text3);margin-top:4px">≈ ${fmtCOP(parseFloat(form.amount)||0)}</div>`:''}
+          </div>
+          <div class="field"><label class="label">Nota (opcional)</label><input class="input" placeholder="Ej: Solo uso para emergencias, con intereses..." value=${form.note} onInput=${e=>upd('note',e.target.value)}/></div>
         </div>
       </div>
     </div>`}

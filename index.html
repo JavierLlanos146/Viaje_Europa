@@ -14,7 +14,7 @@
     <meta name="apple-mobile-web-app-title" content="Europa 🌍" />
     <meta name="theme-color" content="#0F172A" />
     <link rel="manifest" href="manifest.json" />
-    <title>Planea tu viaje</title>
+    <title>PLANEA TU VIAJE</title>
     <style>
       * {
         box-sizing: border-box;
@@ -1532,6 +1532,17 @@
           }
         }, []);
 
+        const [savings, setSavings] = useState(() => LS.get("savings_f1", []));
+        const [savingsGoal, setSavingsGoal] = useState(() =>
+          LS.get("savingsGoal_f1", 0),
+        );
+        const [extraRates, setExtraRates] = useState(() =>
+          LS.get("extraRates_f1", {}),
+        );
+        useEffect(() => LS.set("savings_f1", savings), [savings]);
+        useEffect(() => LS.set("savingsGoal_f1", savingsGoal), [savingsGoal]);
+        useEffect(() => LS.set("extraRates_f1", extraRates), [extraRates]);
+
         const resetApp = useCallback(() => {
           if (
             !confirm(
@@ -1565,7 +1576,6 @@
             "savingsGoal_f1",
             "extraRates_f1",
           ].forEach((k) => localStorage.removeItem(k));
-          // Limpiar archivos de IndexedDB
           openDB()
             .then((db) => {
               const t = db.transaction("files", "readwrite");
@@ -1574,17 +1584,6 @@
             .catch(() => {});
           alert("✅ App reseteada. Empezá tu nuevo viaje.");
         }, []);
-
-        const [savings, setSavings] = useState(() => LS.get("savings_f1", []));
-        const [savingsGoal, setSavingsGoal] = useState(() =>
-          LS.get("savingsGoal_f1", 0),
-        );
-        const [extraRates, setExtraRates] = useState(() =>
-          LS.get("extraRates_f1", {}),
-        );
-        useEffect(() => LS.set("savings_f1", savings), [savings]);
-        useEffect(() => LS.set("savingsGoal_f1", savingsGoal), [savingsGoal]);
-        useEffect(() => LS.set("extraRates_f1", extraRates), [extraRates]);
         const totalExp = useMemo(
           () =>
             exp.reduce((s, e) => {
@@ -1592,6 +1591,10 @@
               return s + (e.currency === "EUR" ? v : v / rate);
             }, 0),
           [exp, rate],
+        );
+        const totalBud = useMemo(
+          () => Object.values(bud).reduce((s, b) => s + budgetTotal(b), 0),
+          [bud],
         );
         const urgentN = useMemo(() => {
           let n = 0;

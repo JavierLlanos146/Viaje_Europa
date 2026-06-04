@@ -1545,16 +1545,6 @@
 
         const [showReset, setShowReset] = useState(false);
         const doReset = () => {
-          setItin(INIT_ITINERARY);
-          setExp([]);
-          setBud(INIT_BUDGETS);
-          setChk(INIT_CHECKLIST);
-          setDocs(INIT_DOCS);
-          setRate(5000);
-          setRateUSD(1.08);
-          setSavings([]);
-          setSavingsGoal(0);
-          setExtraRates({});
           [
             "itin_f1",
             "exp_f1",
@@ -1567,13 +1557,7 @@
             "savingsGoal_f1",
             "extraRates_f1",
           ].forEach((k) => localStorage.removeItem(k));
-          openDB()
-            .then((db) => {
-              const t = db.transaction("files", "readwrite");
-              t.objectStore("files").clear();
-            })
-            .catch(() => {});
-          setShowReset(false);
+          window.location.reload();
         };
         const totalExp = useMemo(
           () =>

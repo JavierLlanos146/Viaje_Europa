@@ -1545,19 +1545,24 @@
 
         const [showReset, setShowReset] = useState(false);
         const doReset = () => {
-          [
-            "itin_f1",
-            "exp_f1",
-            "bud_f1",
-            "chk_f1",
-            "doc_f1",
-            "rate_f1",
-            "rateUSD_f1",
-            "savings_f1",
-            "savingsGoal_f1",
-            "extraRates_f1",
-          ].forEach((k) => localStorage.removeItem(k));
-          window.location.reload();
+          // 1. Borrar todo el localStorage
+          localStorage.clear();
+          // 2. Guardar valores VACÍOS explícitamente para que los
+          //    defaults del código no se carguen al reiniciar
+          localStorage.setItem("itin_f1", "[]");
+          localStorage.setItem("exp_f1",  "[]");
+          localStorage.setItem("bud_f1",  "{}");
+          localStorage.setItem("chk_f1",  "{}");
+          localStorage.setItem("doc_f1",  "[]");
+          localStorage.setItem("savings_f1",     "[]");
+          localStorage.setItem("savingsGoal_f1", "0");
+          localStorage.setItem("extraRates_f1",  "{}");
+          // 3. Recargar con timestamp en la URL para romper bfcache
+          //    y forzar una carga completamente fresca
+          window.location.href =
+            window.location.origin +
+            window.location.pathname +
+            "?reset=" + Date.now();
         };
         const totalExp = useMemo(
           () =>

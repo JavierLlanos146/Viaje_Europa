@@ -2256,6 +2256,7 @@
             `}
           </div>
 
+          ${itin.length > 0 ? html`
           <div class="card">
             <div style="font-size:14px;font-weight:700;margin-bottom:10px">
               🗓️ Momentos especiales
@@ -2355,6 +2356,15 @@
                 </div>`,
             )}
           </div>
+          ` : html`
+          <div class="card" style="text-align:center;padding:32px 16px;margin-bottom:24px">
+            <div style="font-size:48px;margin-bottom:12px">✈️</div>
+            <div style="font-size:16px;font-weight:700;margin-bottom:6px">¡Listo para un nuevo viaje!</div>
+            <div style="font-size:13px;color:var(--text3);line-height:1.5">
+              Empezá agregando ciudades en la pestaña <strong>Ruta</strong> para planear tu próxima aventura.
+            </div>
+          </div>
+          `}
 
           <div
             class="card"

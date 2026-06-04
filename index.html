@@ -1543,7 +1543,10 @@
         useEffect(() => LS.set("savingsGoal_f1", savingsGoal), [savingsGoal]);
         useEffect(() => LS.set("extraRates_f1", extraRates), [extraRates]);
 
-        const [showReset, setShowReset] = useState(false);
+        const [tripDate, setTripDate] = useState(() => LS.get("tripDate_f1", "2026-12-15"));
+        const [tripLabel, setTripLabel] = useState(() => LS.get("tripLabel_f1", "Martes 15 dic 2026 · BOG 16:00 → MAD 15 dic noche"));
+        useEffect(() => LS.set("tripDate_f1", tripDate), [tripDate]);
+        useEffect(() => LS.set("tripLabel_f1", tripLabel), [tripLabel]);
         const doReset = () => {
           // 1. Borrar todo el localStorage
           localStorage.clear();
@@ -1557,6 +1560,8 @@
           localStorage.setItem("savings_f1",     "[]");
           localStorage.setItem("savingsGoal_f1", "0");
           localStorage.setItem("extraRates_f1",  "{}");
+          localStorage.removeItem("tripDate_f1");
+          localStorage.removeItem("tripLabel_f1");
           // 3. Recargar con timestamp en la URL para romper bfcache
           //    y forzar una carga completamente fresca
           window.location.href =
@@ -1671,6 +1676,10 @@
               doReset=${doReset}
               extraRates=${extraRates}
               setExtraRates=${setExtraRates}
+              tripDate=${tripDate}
+              setTripDate=${setTripDate}
+              tripLabel=${tripLabel}
+              setTripLabel=${setTripLabel}
             />`}
             ${tab === "itin" &&
             html`<${ItinTab}
@@ -1752,10 +1761,20 @@
         doReset,
         extraRates,
         setExtraRates,
+        tripDate,
+        setTripDate,
+        tripLabel,
+        setTripLabel,
       }) {
-        const days = daysUntil("2026-12-15");
+        const days = tripDate ? daysUntil(tripDate) : null;
         const pct =
           totalBud > 0 ? Math.min(100, (totalExp / totalBud) * 100) : 0;
+        const [editTrip, setEditTrip] = useState(false);
+        const [dateInput, setDateInput] = useState(tripDate || "");
+        const [labelInput, setLabelInput] = useState(tripLabel || "");
+        const saveTrip = () => {
+          if (dateInput) { setTripDate(dateInput); setTripLabel(labelInput); setEditTrip(false); }
+        };
         const [editRate, setEditRate] = useState(false);
         const [rateInput, setRateInput] = useState(String(rate));
         const saveRate = () => {
@@ -1929,15 +1948,49 @@
             </div>
           `}
 
-          <div class="countdown">
-            <div class="cd-days">${days > 0 ? days : 0}</div>
-            <div class="cd-label">
-              ${days > 0 ? "días para el viaje 🛫" : "¡Ya estás viajando!"}
+          ${editTrip ? html`
+          <div class="card" style="margin-bottom:8px;border:1px solid var(--blue)">
+            <div style="font-size:14px;font-weight:700;margin-bottom:12px">✈️ Fecha del viaje</div>
+            <div class="field">
+              <label class="label">Fecha de salida</label>
+              <input class="input" type="date" value=${dateInput}
+                onInput=${e => setDateInput(e.target.value)}/>
             </div>
-            <div class="cd-date">
-              Salida: Martes 15 dic 2026 · BOG 16:00 → MAD 15 dic noche
+            <div class="field">
+              <label class="label">Descripción del vuelo (opcional)</label>
+              <input class="input" type="text"
+                placeholder="Ej: Vie 15 dic · BOG 16:00 → MAD 23:00"
+                value=${labelInput}
+                onInput=${e => setLabelInput(e.target.value)}/>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <button class="btn btn-primary" style="flex:1" onClick=${saveTrip}>Guardar</button>
+              <button class="btn btn-ghost" style="flex:1" onClick=${() => setEditTrip(false)}>Cancelar</button>
             </div>
           </div>
+          ` : days !== null ? html`
+          <div class="countdown" style="position:relative">
+            <button
+              onClick=${() => { setDateInput(tripDate); setLabelInput(tripLabel); setEditTrip(true); }}
+              style="position:absolute;top:8px;right:8px;background:rgba(255,255,255,0.1);border:none;border-radius:8px;padding:4px 8px;font-size:11px;color:rgba(255,255,255,0.7);cursor:pointer">
+              ✏️ Editar
+            </button>
+            <div class="cd-days">${days > 0 ? days : 0}</div>
+            <div class="cd-label">
+              ${days > 0 ? "días para el viaje 🛫" : "¡Ya estás viajando! 🌍"}
+            </div>
+            ${tripLabel ? html`<div class="cd-date">Salida: ${tripLabel}</div>` : ""}
+          </div>
+          ` : html`
+          <div class="card" style="text-align:center;padding:20px 16px;margin-bottom:8px;border:2px dashed var(--blue)">
+            <div style="font-size:32px;margin-bottom:8px">🗓️</div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:4px">¿Cuándo salís?</div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Agregá la fecha de tu vuelo para ver el contador</div>
+            <button class="btn btn-primary" style="width:100%" onClick=${() => setEditTrip(true)}>
+              + Agregar fecha de salida
+            </button>
+          </div>
+          `}
 
           ${urgentN > 0 &&
           html`<div class="alert alert-red">

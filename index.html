@@ -1543,15 +1543,13 @@
         useEffect(() => LS.set("savingsGoal_f1", savingsGoal), [savingsGoal]);
         useEffect(() => LS.set("extraRates_f1", extraRates), [extraRates]);
 
-        const [tripDate, setTripDate] = useState(() => LS.get("tripDate_f1", "2026-12-15"));
-        const [tripLabel, setTripLabel] = useState(() => LS.get("tripLabel_f1", "Martes 15 dic 2026 · BOG 16:00 → MAD 15 dic noche"));
+        const [tripDate, setTripDate] = useState(() => LS.get("tripDate_f1", ""));
+        const [tripLabel, setTripLabel] = useState(() => LS.get("tripLabel_f1", ""));
         useEffect(() => LS.set("tripDate_f1", tripDate), [tripDate]);
         useEffect(() => LS.set("tripLabel_f1", tripLabel), [tripLabel]);
+        const [showReset, setShowReset] = useState(false);
         const doReset = () => {
-          // 1. Borrar todo el localStorage
           localStorage.clear();
-          // 2. Guardar valores VACÍOS explícitamente para que los
-          //    defaults del código no se carguen al reiniciar
           localStorage.setItem("itin_f1", "[]");
           localStorage.setItem("exp_f1",  "[]");
           localStorage.setItem("bud_f1",  "{}");
@@ -1560,14 +1558,9 @@
           localStorage.setItem("savings_f1",     "[]");
           localStorage.setItem("savingsGoal_f1", "0");
           localStorage.setItem("extraRates_f1",  "{}");
-          localStorage.removeItem("tripDate_f1");
-          localStorage.removeItem("tripLabel_f1");
-          // 3. Recargar con timestamp en la URL para romper bfcache
-          //    y forzar una carga completamente fresca
-          window.location.href =
-            window.location.origin +
-            window.location.pathname +
-            "?reset=" + Date.now();
+          localStorage.setItem("tripDate_f1",    '""');
+          localStorage.setItem("tripLabel_f1",   '""');
+          window.location.reload();
         };
         const totalExp = useMemo(
           () =>

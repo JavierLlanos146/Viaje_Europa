@@ -1543,17 +1543,8 @@
         useEffect(() => LS.set("savingsGoal_f1", savingsGoal), [savingsGoal]);
         useEffect(() => LS.set("extraRates_f1", extraRates), [extraRates]);
 
-        const resetApp = useCallback(() => {
-          if (
-            !confirm(
-              "⚠️ ¿Estás seguro? Esto borrará TODOS los datos: gastos, presupuesto, checklist, documentos e itinerario. Esta acción no se puede deshacer.",
-            )
-          )
-            return;
-          if (
-            !confirm("🚨 Segunda confirmación: ¿Borrar todo y empezar de cero?")
-          )
-            return;
+        const [showReset, setShowReset] = useState(false);
+        const doReset = () => {
           setItin(INIT_ITINERARY);
           setExp([]);
           setBud(INIT_BUDGETS);
@@ -1582,8 +1573,9 @@
               t.objectStore("files").clear();
             })
             .catch(() => {});
-          alert("✅ App reseteada. Empezá tu nuevo viaje.");
-        }, []);
+          setShowReset(false);
+        };
+        const resetApp = () => setShowReset(true);
         const totalExp = useMemo(
           () =>
             exp.reduce((s, e) => {
@@ -1746,6 +1738,25 @@
                 </button>`,
             )}
           </nav>
+          ${showReset && html`
+            <div class="modal-overlay open" style="z-index:9999">
+              <div class="modal" style="max-height:auto">
+                <div style="padding:24px 20px;text-align:center">
+                  <div style="font-size:48px;margin-bottom:12px">🗑️</div>
+                  <div style="font-size:18px;font-weight:800;margin-bottom:8px">¿Borrar todo?</div>
+                  <div style="font-size:13px;color:var(--text3);margin-bottom:20px;line-height:1.5">
+                    Se eliminarán <strong>todos</strong> los datos: gastos, presupuesto, checklist, documentos, itinerario y ahorros.<br/><br/>Esta acción <strong style="color:var(--red)">no se puede deshacer</strong>.
+                  </div>
+                  <button class="btn" style="width:100%;background:var(--red);color:#fff;font-weight:700;padding:14px;border-radius:12px;font-size:15px;margin-bottom:10px" onClick=${doReset}>
+                    Sí, borrar todo y empezar de cero
+                  </button>
+                  <button class="btn btn-ghost" style="width:100%;padding:12px;font-size:14px" onClick=${()=>setShowReset(false)}>
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          `}
         </div>`;
       }
 
